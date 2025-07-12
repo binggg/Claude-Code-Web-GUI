@@ -106,10 +106,10 @@ body {
     background: 
         radial-gradient(
             circle at center,
-            rgba(102, 126, 234, 0.8) 0%,
-            rgba(147, 197, 253, 0.6) 20%,
-            rgba(255, 255, 255, 0.4) 40%,
-            rgba(255, 255, 255, 0.2) 60%,
+            rgba(102, 126, 234, 0.7) 0%,
+            rgba(147, 197, 253, 0.5) 20%,
+            rgba(255, 255, 255, 0.3) 40%,
+            rgba(255, 255, 255, 0.15) 60%,
             transparent 80%
         );
     border-radius: 50%;
@@ -129,16 +129,16 @@ body {
         radial-gradient(
             circle at center,
             transparent 0%,
-            rgba(139, 92, 246, 0.6) 30%,
-            rgba(167, 139, 250, 0.7) 45%,
-            rgba(196, 181, 253, 0.5) 55%,
-            rgba(255, 255, 255, 0.3) 70%,
+            rgba(139, 92, 246, 0.2) 30%,
+            rgba(167, 139, 250, 0.25) 45%,
+            rgba(196, 181, 253, 0.15) 55%,
+            rgba(255, 255, 255, 0.1) 70%,
             transparent 85%
         );
     border-radius: 50%;
     animation: breathingRing 10s ease-in-out infinite reverse;
     pointer-events: none;
-    opacity: 1.0;
+    opacity: 0.6;
 }
 
 @keyframes breathingRing {
