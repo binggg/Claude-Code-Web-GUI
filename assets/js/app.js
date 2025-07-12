@@ -1514,10 +1514,11 @@ ${t('vscodeOptions') || '打开方式'}:
     
     updateMetaTagsForGist(gistData) {
         // Update page title
-        document.title = `${gistData.title} - Claude Code Gist 查看`;
+        document.title = `${gistData.title} - ${t('gistViewTitle') || 'Claude Code Gist 查看'}`;
         
         // Create description for Gist
-        const description = `📋 从 GitHub Gist 导入的 Claude Code 会话："${gistData.title}" - 在线查看和学习 AI 编程对话`;
+        const descriptionTemplate = t('gistViewDescription') || '📋 从 GitHub Gist 导入的 Claude Code 会话："{{title}}" - 在线查看和学习 AI 编程对话';
+        const description = descriptionTemplate.replace('{{title}}', gistData.title);
         
         // Get current URL
         const currentUrl = window.location.href;
@@ -1537,7 +1538,10 @@ ${t('vscodeOptions') || '打开方式'}:
         this.updateMetaTag('twitter:url', currentUrl);
         
         // Add Gist-specific info
-        const gistInfo = `📅 创建: ${new Date(gistData.created).toLocaleDateString()} | 格式: ${gistData.isJSONL ? 'JSONL' : 'Markdown'}`;
+        const infoTemplate = t('gistCreationInfo') || '📅 创建: {{date}} | 格式: {{format}}';
+        const gistInfo = infoTemplate
+            .replace('{{date}}', new Date(gistData.created).toLocaleDateString())
+            .replace('{{format}}', gistData.isJSONL ? 'JSONL' : 'Markdown');
         this.updateMetaTag('og:article:author', 'Claude Code Web GUI');
         this.updateMetaTag('og:article:section', gistInfo);
     }
@@ -1763,17 +1767,17 @@ ${t('vscodeOptions') || '打开方式'}:
         document.title = 'Claude Code Web GUI';
         
         // Reset description
-        this.updateMetaTag('description', '一个简洁实用的 Claude Code 会话浏览器，完全在浏览器中运行，支持本地浏览、便捷分享、导入查看等功能。');
+        this.updateMetaTag('description', t('defaultMetaDescription') || '一个简洁实用的 Claude Code 会话浏览器，完全在浏览器中运行，支持本地浏览、便捷分享、导入查看等功能。');
         
         // Reset Open Graph tags
-        this.updateMetaTag('og:title', 'Claude Code Web GUI - 智能代码会话浏览器');
-        this.updateMetaTag('og:description', '🚀 完全在浏览器中运行的 Claude Code 会话浏览器，支持本地浏览、便捷分享、隐私保护。无需服务器，开箱即用！');
+        this.updateMetaTag('og:title', t('defaultOgTitle') || 'Claude Code Web GUI - 智能代码会话浏览器');
+        this.updateMetaTag('og:description', t('defaultOgDescription') || '🚀 完全在浏览器中运行的 Claude Code 会话浏览器，支持本地浏览、便捷分享、隐私保护。无需服务器，开箱即用！');
         this.updateMetaTag('og:url', 'https://binggg.github.io/Claude-Code-Web-GUI/');
         this.updateMetaTag('og:type', 'website');
         
         // Reset Twitter Card tags
-        this.updateMetaTag('twitter:title', 'Claude Code Web GUI - 智能代码会话浏览器');
-        this.updateMetaTag('twitter:description', '🚀 完全在浏览器中运行的 Claude Code 会话浏览器，支持本地浏览、便捷分享、隐私保护。无需服务器，开箱即用！');
+        this.updateMetaTag('twitter:title', t('defaultOgTitle') || 'Claude Code Web GUI - 智能代码会话浏览器');
+        this.updateMetaTag('twitter:description', t('defaultOgDescription') || '🚀 完全在浏览器中运行的 Claude Code 会话浏览器，支持本地浏览、便捷分享、隐私保护。无需服务器，开箱即用！');
         this.updateMetaTag('twitter:url', 'https://binggg.github.io/Claude-Code-Web-GUI/');
         
         // Remove article-specific meta tags
@@ -1998,7 +2002,7 @@ window.shareSessionToX = () => {
     const hash = window.location.hash;
     const currentUrl = window.location.href;
     
-    let sessionTitle = 'Claude Code会话';
+    let sessionTitle = t('claudeCodeSession') || 'Claude Code会话';
     
     // Try to extract session title from the page
     const titleElement = document.getElementById('main-title');
@@ -2006,7 +2010,8 @@ window.shareSessionToX = () => {
         sessionTitle = titleElement.textContent.replace('📤 ', '');
     }
     
-    const text = `🚀 查看这个Claude Code会话："${sessionTitle}"`;
+    const tweetTemplate = t('viewThisSession') || '🚀 查看这个Claude Code会话："{{title}}"';
+    const text = tweetTemplate.replace('{{title}}', sessionTitle);
     const hashtags = 'ClaudeCode,AI,Programming,CodeSession';
     
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentUrl)}&hashtags=${hashtags}`;
@@ -2022,26 +2027,26 @@ window.openGistImportDialog = () => {
     modal.innerHTML = `
         <div class="share-modal-content">
             <div class="share-modal-header">
-                <h3>🌐 查看他人分享的会话</h3>
+                <h3>🌐 ${t('viewSharedSessions') || '查看他人分享的会话'}</h3>
                 <button class="close-btn" onclick="closeShareModal()">✕</button>
             </div>
             <div class="share-modal-body">
                 <div class="share-option">
-                    <h4>📖 输入Gist地址</h4>
+                    <h4>📖 ${t('gistAddressInput') || '输入Gist地址'}</h4>
                     <p style="color: #a1a1aa; font-size: 12px; margin-bottom: 12px;">
-                        输入他人分享的GitHub Gist地址，即可查看其会话内容。支持完整URL或Gist ID。
+                        ${t('gistImportDescription2') || '输入他人分享的GitHub Gist地址，即可查看其会话内容。支持完整URL或Gist ID。'}
                     </p>
                     <div class="gist-import-examples" style="background: #13141a; border: 1px solid #3f3f46; border-radius: 4px; padding: 10px; margin: 12px 0;">
-                        <small style="color: #60a5fa;">💡 支持的格式：</small>
+                        <small style="color: #60a5fa;">${t('supportedFormats') || '💡 支持的格式：'}</small>
                         <ul style="color: #71717a; font-size: 11px; margin: 6px 0 0 16px; line-height: 1.4;">
-                            <li>完整URL：https://gist.github.com/username/abc123...</li>
-                            <li>Gist ID：abc123def456...</li>
+                            <li>${t('fullUrlFormat') || '完整URL：https://gist.github.com/username/abc123...'}</li>
+                            <li>${t('gistIdFormat') || 'Gist ID：abc123def456...'}</li>
                         </ul>
                     </div>
                     <div class="gist-import-section">
-                        <input type="text" class="gist-url-input" placeholder="输入Gist URL或ID..." id="homepage-gist-input" style="width: 100%; margin-bottom: 12px;">
+                        <input type="text" class="gist-url-input" placeholder="${t('gistUrlOrIdPlaceholder') || '输入Gist URL或ID...'}" id="homepage-gist-input" style="width: 100%; margin-bottom: 12px;">
                         <button class="action-btn gist-btn" onclick="importFromHomepage()" style="width: 100%;">
-                            🚀 查看会话
+                            🚀 ${t('viewSession') || '查看会话'}
                         </button>
                     </div>
                 </div>
@@ -2055,7 +2060,7 @@ window.openGistImportDialog = () => {
 window.importFromHomepage = async () => {
     const gistUrl = document.getElementById('homepage-gist-input').value.trim();
     if (!gistUrl) {
-        alert('请输入Gist URL或ID');
+        alert(t('pleaseEnterGistUrlOrId') || '请输入Gist URL或ID');
         return;
     }
     
