@@ -1,8 +1,23 @@
-# <img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="32" style="vertical-align: middle;"> Claude Code Web GUI
+# <div align="center"><img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="48"></div>
+
+<div align="center">
+
+# Claude Code Web GUI
+
+[![GitHub stars](https://img.shields.io/github/stars/binggg/Claude-Code-Web-GUI?style=flat-square&logo=github)](https://github.com/binggg/Claude-Code-Web-GUI/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/binggg/Claude-Code-Web-GUI?style=flat-square&logo=github)](https://github.com/binggg/Claude-Code-Web-GUI/network)
+[![GitHub issues](https://img.shields.io/github/issues/binggg/Claude-Code-Web-GUI?style=flat-square&logo=github)](https://github.com/binggg/Claude-Code-Web-GUI/issues)
+[![GitHub license](https://img.shields.io/github/license/binggg/Claude-Code-Web-GUI?style=flat-square)](https://github.com/binggg/Claude-Code-Web-GUI/blob/main/LICENSE)
+[![GitHub deployments](https://img.shields.io/github/deployments/binggg/Claude-Code-Web-GUI/github-pages?style=flat-square&label=deployment)](https://binggg.github.io/Claude-Code-Web-GUI/)
+
+</div>
 
 A simple and practical Claude Code session browser that runs entirely in your browser with no server required.
 
 English | [中文](README_ZH.md)
+
+> [!TIP]
+> ⭐ Show your support — star the repo
 
 ## Features
 

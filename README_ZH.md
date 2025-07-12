@@ -1,8 +1,23 @@
-# <img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="32" style="vertical-align: middle;"> Claude Code Web GUI
+# <div align="center"><img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="48"></div>
+
+<div align="center">
+
+# Claude Code Web GUI
+
+[![GitHub stars](https://img.shields.io/github/stars/binggg/Claude-Code-Web-GUI?style=flat-square&logo=github)](https://github.com/binggg/Claude-Code-Web-GUI/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/binggg/Claude-Code-Web-GUI?style=flat-square&logo=github)](https://github.com/binggg/Claude-Code-Web-GUI/network)
+[![GitHub issues](https://img.shields.io/github/issues/binggg/Claude-Code-Web-GUI?style=flat-square&logo=github)](https://github.com/binggg/Claude-Code-Web-GUI/issues)
+[![GitHub license](https://img.shields.io/github/license/binggg/Claude-Code-Web-GUI?style=flat-square)](https://github.com/binggg/Claude-Code-Web-GUI/blob/main/LICENSE)
+[![GitHub deployments](https://img.shields.io/github/deployments/binggg/Claude-Code-Web-GUI/github-pages?style=flat-square&label=deployment)](https://binggg.github.io/Claude-Code-Web-GUI/)
+
+</div>
 
 一个简洁实用的 Claude Code 会话浏览器，完全在浏览器中运行，无需服务器。
 
 [English](README.md) | 中文
+
+> [!TIP]
+> ⭐ 给个Star支持一下 — 为仓库点星
 
 ## 功能特性
 

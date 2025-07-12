@@ -1252,10 +1252,20 @@ ${t('vscodeOptions') || '打开方式'}:
             <span>⬅️</span>
             <span>${t('backToApp') || '返回应用'}</span>
         `;
-        backBtn.onclick = () => window.location.reload();
+        backBtn.onclick = () => this.returnToHomepage();
         
+        // Add share to X button
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'action-btn twitter-share';
+        shareBtn.innerHTML = `
+            <span>𝕏</span>
+            <span>${t('shareToX') || '分享到X'}</span>
+        `;
+        shareBtn.onclick = () => this.shareGistToX(gistData);
+
         actionsDiv.innerHTML = '';
         actionsDiv.appendChild(backBtn);
+        actionsDiv.appendChild(shareBtn);
     }
     
     renderImportedContent(gistData) {
@@ -1420,6 +1430,14 @@ ${t('vscodeOptions') || '打开方式'}:
             
             container.appendChild(messagesDiv);
         }
+    }
+    
+    shareGistToX(gistData) {
+        const text = `🚀 Check out this Claude Code session from GitHub Gist: "${gistData.title}"`;
+        const hashtags = 'ClaudeCode,AI,Programming,Gist';
+        
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(gistData.url)}&hashtags=${hashtags}`;
+        window.open(twitterUrl, '_blank');
     }
     
     sessionToJSONL(sessionData) {
