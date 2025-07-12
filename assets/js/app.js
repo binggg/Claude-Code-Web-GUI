@@ -898,16 +898,6 @@ ${t('vscodeOptions') || '打开方式'}:
         // Prepare content and metadata
         const jsonlContent = this.sessionToJSONL(sessionData);
         
-        // Generate filename based on session data
-        const timestamp = new Date(sessionData.timestamp).toISOString().slice(0, 10);
-        const safeTitle = sessionData.summary.replace(/[^a-zA-Z0-9\u4e00-\u9fff\s-]/g, '').substring(0, 30);
-        const filename = `claude-session-${timestamp}-${safeTitle}.jsonl`;
-        
-        // Create GitHub Gist URL with parameters for filename and public setting
-        const gistUrl = new URL('https://gist.github.com/new');
-        gistUrl.searchParams.set('filename', filename);
-        gistUrl.searchParams.set('public', 'true'); // Force public gist
-        
         // Analyze content for user feedback
         const contentSize = jsonlContent.length;
         const sizeInKB = Math.round(contentSize / 1024);
@@ -929,7 +919,7 @@ ${t('vscodeOptions') || '打开方式'}:
             this.showGistCreationInstructions();
             
             // Show detailed feedback about content
-            let feedbackMessage = `✅ Gist内容已复制到剪贴板！\n\n📊 内容统计：\n- 大小：${sizeInKB} KB\n- 消息数：${messageCount} 条\n- 文件名：${filename}`;
+            let feedbackMessage = `✅ Gist内容已复制到剪贴板！\n\n📊 内容统计：\n- 大小：${sizeInKB} KB\n- 消息数：${messageCount} 条`;
             
             // Check for truncation
             const truncationLine = lines.find(line => {
@@ -946,7 +936,6 @@ ${t('vscodeOptions') || '打开方式'}:
                 feedbackMessage += `\n\n⚠️ 由于Gist大小限制，已截断至前${truncationInfo.includedMessages}条消息`;
             }
             
-            feedbackMessage += '\n\n💡 提示：页面将自动设置为公开Gist，并预填文件名';
             feedbackMessage += '\n\n将为您打开GitHub Gist创建页面...';
             alert(feedbackMessage);
         } catch (err) {
@@ -955,8 +944,10 @@ ${t('vscodeOptions') || '打开方式'}:
             alert('请手动复制Gist内容');
         }
         
-        window.open(gistUrl.toString(), '_blank');
-        return gistUrl.toString();
+        // Open simple GitHub Gist creation page
+        const gistUrl = 'https://gist.github.com/new';
+        window.open(gistUrl, '_blank');
+        return gistUrl;
     }
     
     showGistCreationInstructions() {

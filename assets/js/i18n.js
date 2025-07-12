@@ -2,38 +2,34 @@
 const LANGUAGES = {
     en: {
         title: 'Claude Code Web GUI',
-        subtitle: 'Browse and view your Claude Code session history - entirely in your browser, no server required',
+        subtitle: 'Browse, view and share your Claude Code sessions - runs entirely in browser',
         github: 'GitHub',
         privacy: {
             title: 'Privacy Protection',
-            text: 'This app runs entirely in your browser locally and will not upload any data to servers'
+            text: 'Runs entirely locally, supports session sharing, no data uploads'
         },
         features: {
             title: 'Key Features',
             list: [
-                'View and browse Claude Code session history directly in your browser',
-                'Share and collaborate on conversation records with others',
-                'Import shared sessions from GitHub Gist for learning and teaching',
-                'Export sessions to multiple formats (Markdown, PDF, etc.)',
-                'Complete privacy - all processing happens locally in your browser'
+                '📁 **Local Browsing**: Securely view your Claude Code session history',
+                '🔗 **Easy Sharing**: Share sessions with others via GitHub Gist',
+                '🌐 **Import & View**: View sessions shared by others',
+                '🔒 **Privacy Protection**: Runs entirely in browser, no server dependency'
             ]
         },
         instructions: {
-            title: 'Instructions:',
+            title: 'Key Features:',
             steps: [
-                'Click the button below to select directory',
-                'In the file selector, press <kbd>Cmd+Shift+.</kbd> (Mac) or <kbd>Ctrl+H</kbd> (Windows/Linux) to show hidden files',
-                'Find and select the <code>.claude</code> directory (usually in home directory: <code>~/</code>)',
-                'Start browsing your session records'
+                '📁 **Local Browsing**: Securely view your Claude Code session history',
+                '🔗 **Easy Sharing**: Share sessions with others via GitHub Gist',
+                '🌐 **Import & View**: View sessions shared by others',
+                '🔒 **Privacy Protection**: Runs entirely in browser, no server dependency'
             ],
-            locations: 'Common locations:',
-            locationList: [
-                'Mac: <code>/Users/[username]/.claude</code>',
-                'Windows: <code>C:\\Users\\[username]\\.claude</code>',
-                'Linux: <code>/home/[username]/.claude</code>'
-            ]
+            locations: 'Get Started: Click the button below to select the .claude directory',
+            locationList: []
         },
         selectBtn: '📁 Select .claude directory',
+        gistImportBtn: '🌐 View shared sessions',
         loading: 'Loading...',
         sessionHistory: 'Session History',
         searchPlaceholder: 'Search sessions...',
@@ -45,7 +41,8 @@ const LANGUAGES = {
             justNow: 'Just now',
             minutesAgo: (n) => `${n} minutes ago`,
             hoursAgo: (n) => `${n} hours ago`,
-            daysAgo: (n) => `${n} days ago`
+            daysAgo: (n) => `${n} days ago`,
+            unknown: 'Unknown time'
         },
         toolUse: 'Tool used',
         toolParams: 'Tool parameters',
@@ -54,6 +51,7 @@ const LANGUAGES = {
         shareSuccess: 'Share link copied to clipboard!',
         shareManual: 'Please manually copy the share link:',
         sharedSession: 'Shared Session',
+        shareToX: 'Share to X',
         shareToTwitter: 'Share to X',
         time: 'Time',
         sessionId: 'Session ID',
@@ -62,9 +60,9 @@ const LANGUAGES = {
         projectInfo: 'Project Info',
         openInVSCode: 'Open in VSCode',
         shareSession: 'Share Session',
-        shareViaGist: 'Share via GitHub Gist',
-        gistDescription: 'Create a GitHub Gist to share this session',
-        createGist: 'Create Gist',
+        shareViaGist: 'Create Gist to Share Session',
+        gistDescription: 'Share your complete session history via GitHub Gist, maintaining original JSONL format for easy import.',
+        createGist: 'Start Creating Gist',
         downloadMarkdown: 'Download Markdown File',
         markdownDescription: 'Download the session as a Markdown file for sharing',
         download: 'Download',
@@ -75,13 +73,14 @@ const LANGUAGES = {
         gistContentCopied: 'Gist content copied to clipboard, opening GitHub Gist page',
         markdownCopied: 'Markdown content copied to clipboard',
         manualCopy: 'Please copy manually:',
-        importFromGist: 'Import from Gist',
-        gistImportDescription: 'Enter a GitHub Gist URL to view shared sessions',
+        importFromGist: 'View Others\' Shared Sessions',
+        gistImportDescription: 'Enter a GitHub Gist URL to view shared session content.',
         gistUrlPlaceholder: 'Enter Gist URL...',
-        importGist: 'Import',
+        importGist: 'View Session',
         invalidGistUrl: 'Invalid Gist URL',
         gistFetchFailed: 'Failed to fetch Gist content',
         gistImportError: 'Gist import failed',
+        noSessionFileInGist: 'No session file found in Gist',
         noMarkdownInGist: 'No Markdown file found in Gist',
         gistRateLimited: 'GitHub API rate limited, using fallback method...',
         gistFallbackSuccess: 'Successfully loaded Gist content using fallback method',
@@ -91,6 +90,7 @@ const LANGUAGES = {
         gistId: 'Gist ID',
         created: 'Created',
         updated: 'Updated',
+        format: 'Format',
         importedNote: 'This content was imported from a GitHub Gist',
         pleaseEnterGistUrl: 'Please enter a Gist URL',
         gistImportHelp: 'Gist Import Help',
@@ -118,8 +118,20 @@ const LANGUAGES = {
         chatSendDisabledTooltip: 'Send function is not yet available',
         send: 'Send',
         back: 'Back',
+        noMessagesInShare: 'No messages found in shared session',
         shareLinkLimitation: 'Note: Share links only include the first 10 messages. For complete sessions, please use Gist sharing',
-        gistRecommendation: 'Recommended: Contains complete session content, supports Markdown format, convenient for long-term storage and sharing',
+        gistRecommendation: 'Recommended: Contains complete session content, supports original JSONL format, convenient for long-term storage and sharing',
+        gistCreationSteps: 'Gist Creation Steps',
+        gistStep1: 'Paste the copied content on the opened GitHub page',
+        gistStep2: 'Name the file (recommended to use .jsonl extension)',
+        gistStep3: 'Add description (optional)',
+        gistStep4Public: 'Select "Create public gist" (Important: Must be public for others to access)',
+        gistStep5: 'Copy the created Gist URL',
+        shareGistUrl: 'Share Gist URL',
+        shareGistUrlDesc: 'After creating the Gist, paste the URL below for social media sharing',
+        pasteGistUrl: 'Paste created Gist URL...',
+        copyImportLink: 'Copy Import Link',
+        importLinkCopied: 'Import link copied to clipboard! Users can click this link to directly import the Gist session',
         errors: {
             unsupported: 'Your browser does not support the File System Access API. Please use the latest version of Chrome or Edge.',
             accessFailed: 'Failed to access directory',
@@ -260,6 +272,18 @@ const LANGUAGES = {
         back: '返回',
         shareLinkLimitation: '注意：分享链接仅包含前10条消息，如需分享完整会话请使用Gist功能',
         gistRecommendation: '推荐：包含完整会话内容，支持Markdown格式，便于长期保存和分享',
+        gistCreationSteps: 'Gist创建步骤',
+        gistStep1: '在打开的GitHub页面中，粘贴已复制的内容',
+        gistStep2: '为文件命名（建议使用 .jsonl 扩展名）',
+        gistStep3: '添加描述（可选）',
+        gistStep4: '点击"Create public gist"或"Create secret gist"',
+        gistStep5: '复制创建的Gist URL',
+        shareGistUrl: '分享Gist URL',
+        shareGistUrlDesc: '创建Gist后，将URL粘贴到下方进行社交媒体分享',
+        pasteGistUrl: '粘贴创建的Gist URL...',
+        shareToX: '分享到X',
+        copyImportLink: '复制导入链接',
+        importLinkCopied: '导入链接已复制到剪贴板！用户点击该链接即可直接导入Gist会话',
         errors: {
             unsupported: '您的浏览器不支持文件系统访问 API。请使用最新版本的 Chrome 或 Edge 浏览器。',
             accessFailed: '访问目录失败',
@@ -337,11 +361,10 @@ function updateUI() {
         privacyText.innerHTML = `<strong>${t('privacy.title')}</strong>：${t('privacy.text')}`;
     }
     
-    // Update instructions
+    // Update instructions/features
     const instructionsTitle = document.querySelector('.instructions h3');
     const instructionsList = document.querySelector('.instructions ol');
     const locationsTitle = document.querySelector('.instructions p strong');
-    const locationsList = document.querySelector('.instructions ul');
     
     if (instructionsTitle) instructionsTitle.textContent = t('instructions.title');
     if (instructionsList) {
@@ -349,16 +372,14 @@ function updateUI() {
             .map(step => `<li>${step}</li>`)
             .join('');
     }
-    if (locationsTitle) locationsTitle.textContent = t('instructions.locations');
-    if (locationsList) {
-        locationsList.innerHTML = t('instructions.locationList')
-            .map(location => `<li>${location}</li>`)
-            .join('');
+    if (locationsTitle && locationsTitle.parentElement) {
+        locationsTitle.parentElement.innerHTML = `<strong>${t('instructions.locations')}</strong>`;
     }
     
-    // Update button
-    const accessBtn = document.querySelector('.access-btn');
-    if (accessBtn) accessBtn.textContent = t('selectBtn');
+    // Update buttons
+    const accessBtns = document.querySelectorAll('.access-btn');
+    if (accessBtns.length >= 1) accessBtns[0].textContent = t('selectBtn');
+    if (accessBtns.length >= 2) accessBtns[1].textContent = t('gistImportBtn');
     
     // Update sidebar
     const sidebarBrand = document.querySelector('.sidebar-brand-text');
@@ -370,7 +391,7 @@ function updateUI() {
     
     // Update main title
     const mainTitle = document.querySelector('.main-title');
-    if (mainTitle && mainTitle.textContent.includes('选择一个会话') || mainTitle.textContent.includes('Select a session')) {
+    if (mainTitle && (mainTitle.textContent.includes('选择一个会话') || mainTitle.textContent.includes('Select a session'))) {
         mainTitle.textContent = t('selectSession');
     }
     
