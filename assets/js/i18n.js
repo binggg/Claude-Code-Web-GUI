@@ -229,6 +229,7 @@ const LANGUAGES = {
             ]
         },
         selectBtn: '📁 选择 .claude 目录',
+        gistImportBtn: '🌐 查看他人分享的会话',
         loading: '正在加载...',
         sessionHistory: '会话历史',
         searchPlaceholder: '搜索会话...',
