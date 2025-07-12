@@ -87,41 +87,66 @@ body {
 /* Header Styles */
 .header {
     text-align: center;
-    padding: 28px 20px;
-    border-bottom: 1px solid #262626;
+    padding: 60px 20px 60px 20px; /* Increased top padding from 40px to 60px for more breathing room */
     background: #000000;
     z-index: 10;
     position: relative;
     overflow: hidden;
 }
 
-/* Animated background light effect */
+/* Elegant breathing ring gradient animation */
 .header::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(
-        circle at center,
-        rgba(102, 126, 234, 0.08) 0%,
-        rgba(102, 126, 234, 0.04) 30%,
-        rgba(102, 126, 234, 0.02) 50%,
-        transparent 70%
-    );
-    animation: headerGlow 8s ease-in-out infinite;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+    transform: translate(-50%, -50%);
+    background: 
+        radial-gradient(
+            circle at center,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0.04) 30%,
+            rgba(255, 255, 255, 0.02) 50%,
+            transparent 70%
+        );
+    border-radius: 50%;
+    animation: breathingRing 8s ease-in-out infinite;
     pointer-events: none;
 }
 
-@keyframes headerGlow {
+.header::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    height: 500px;
+    transform: translate(-50%, -50%);
+    background: 
+        radial-gradient(
+            circle at center,
+            transparent 0%,
+            rgba(255, 255, 255, 0.03) 40%,
+            rgba(255, 255, 255, 0.06) 50%,
+            rgba(255, 255, 255, 0.03) 60%,
+            transparent 80%
+        );
+    border-radius: 50%;
+    animation: breathingRing 12s ease-in-out infinite reverse;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+@keyframes breathingRing {
     0%, 100% {
-        transform: translate(-50%, -50%) rotate(0deg) scale(1);
-        opacity: 0.3;
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0.4;
     }
     50% {
-        transform: translate(-45%, -45%) rotate(180deg) scale(1.1);
-        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.8;
     }
 }
 
@@ -299,6 +324,15 @@ body {
     color: #d4d4d8;
 }
 
+/* Homepage Actions Container */
+.homepage-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    margin-top: 32px;
+}
+
 .access-btn {
     background: linear-gradient(135deg, #ffffff, #f8fafc);
     color: #000000;
@@ -308,7 +342,6 @@ body {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    margin: 24px 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
@@ -317,6 +350,15 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    min-width: 200px;
+    justify-content: center;
+}
+
+.access-btn.secondary {
+    background: linear-gradient(135deg, #18181b, #27272a);
+    color: #ffffff;
+    border: 1px solid #3f3f46;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .access-btn::before {
@@ -330,14 +372,22 @@ body {
     transition: left 0.6s ease;
 }
 
+.access-btn.secondary::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
 .access-btn:hover::before {
     left: 100%;
 }
 
 .access-btn:hover {
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+}
+
+.access-btn.secondary:hover {
+    background: linear-gradient(135deg, #27272a, #3f3f46);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
 .access-btn:active {
@@ -612,7 +662,10 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 12px;
-    max-width: 200px;
+    max-width: 180px; /* Reduced to ensure better fit */
+    line-height: 1.2;
+    max-height: 1.2em; /* Ensure single line */
+    display: block; /* Ensure block display for proper truncation */
 }
 
 .session-meta {
@@ -672,6 +725,10 @@ body {
     color: #ffffff;
     letter-spacing: -0.025em;
     flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 300px; /* Ensure it doesn't take up too much space */
 }
 
 .session-actions {
@@ -883,6 +940,21 @@ body {
 
 .share-recommendation-note small {
     color: #74d474;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+/* Public Gist reminder note */
+.share-public-note {
+    background: #13141a;
+    border: 1px solid #3f3f46;
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin: 8px 0;
+}
+
+.share-public-note small {
+    color: #60a5fa;
     font-size: 11px;
     line-height: 1.4;
 }
@@ -1281,16 +1353,11 @@ body {
     font-size: 13px;
     font-weight: 500;
     white-space: nowrap;
-    opacity: 0;
-    max-width: 0;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.fab-btn:hover .fab-text {
     opacity: 1;
     max-width: 80px;
     margin-left: 4px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fab-btn:hover .fab-icon {

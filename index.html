@@ -13,7 +13,7 @@
                 <img src="assets/icons/logo.svg" class="logo-svg" alt="Claude Code Web GUI">
                 <h1>Claude Code Web GUI</h1>
             </div>
-            <p>浏览和查看您的 Claude Code 会话历史</p>
+            <p>浏览、查看和分享您的 Claude Code 会话 - 完全在浏览器中运行</p>
             
             <div class="header-links">
                 <a href="https://github.com/binggg/Claude-Code-Web-GUI" target="_blank" class="github-link">
@@ -27,29 +27,30 @@
             <div class="privacy-notice">
                 <div class="notice-icon">🔒</div>
                 <div class="notice-text">
-                    <strong>隐私保护</strong>：此应用完全在浏览器本地运行，不会上传任何数据到服务器
+                    <strong>隐私保护</strong>：完全本地运行，支持会话分享，无数据上传
                 </div>
             </div>
             
             <div class="instructions">
-                <h3>使用说明：</h3>
+                <h3>功能特色：</h3>
                 <ol>
-                    <li>点击下方按钮选择目录</li>
-                    <li>在文件选择器中，按 <kbd>Cmd+Shift+.</kbd> (Mac) 或 <kbd>Ctrl+H</kbd> (Windows/Linux) 显示隐藏文件</li>
-                    <li>找到并选择 <code>.claude</code> 目录（通常在用户主目录下：<code>~/</code>)</li>
-                    <li>开始浏览您的会话记录</li>
+                    <li>📁 <strong>本地浏览</strong>：安全查看您的 Claude Code 会话记录</li>
+                    <li>🔗 <strong>便捷分享</strong>：通过 GitHub Gist 分享会话给他人</li>
+                    <li>🌐 <strong>导入查看</strong>：查看他人分享的会话内容</li>
+                    <li>🔒 <strong>隐私保护</strong>：完全在浏览器中运行，无服务器依赖</li>
                 </ol>
-                <p><strong>常见位置：</strong></p>
-                <ul>
-                    <li>Mac: <code>/Users/[用户名]/.claude</code></li>
-                    <li>Windows: <code>C:\Users\[用户名]\.claude</code></li>
-                    <li>Linux: <code>/home/[用户名]/.claude</code></li>
-                </ul>
+                <p><strong>开始使用：</strong>点击下方按钮选择 <code>.claude</code> 目录开始浏览</p>
             </div>
             
-            <button class="access-btn" onclick="requestDirectoryAccess()">
-                📁 选择 .claude 目录
-            </button>
+            <div class="homepage-actions">
+                <button class="access-btn primary" onclick="requestDirectoryAccess()">
+                    📁 选择 .claude 目录
+                </button>
+                
+                <button class="access-btn secondary" onclick="openGistImportDialog()">
+                    🌐 查看他人分享的会话
+                </button>
+            </div>
         </div>
 
         <div id="error-message" class="error hidden"></div>
@@ -107,13 +108,13 @@
 
     <!-- FAB Buttons -->
     <div class="fab-container" id="fab-container">
-        <button class="fab-btn fab-continue" id="fab-continue" onclick="toggleChatInput()" title="继续对话">
-            <span class="fab-icon">💬</span>
-            <span class="fab-text">继续对话</span>
-        </button>
         <button class="fab-btn fab-share" id="fab-share" onclick="shareSession()" title="分享会话">
             <span class="fab-icon">🔗</span>
             <span class="fab-text">分享会话</span>
+        </button>
+        <button class="fab-btn fab-continue" id="fab-continue" onclick="toggleChatInput()" title="继续对话">
+            <span class="fab-icon">💬</span>
+            <span class="fab-text">继续对话</span>
         </button>
     </div>
 

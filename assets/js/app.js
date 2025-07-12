@@ -25,23 +25,83 @@ class ClaudeCodeGUI {
     }
     
     checkForSharedSession() {
-        // Check for URL query parameter first (new method)
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionParam = urlParams.get('session');
+        // Check for URL hash fragment first (new method using #session=)
+        const hash = window.location.hash;
+        
+        if (hash.startsWith('#session=')) {
+            const sessionParam = hash.substring(9); // Remove '#session='
+            try {
+                console.log('Hash session param found:', sessionParam.substring(0, 50) + '...');
+                console.log('Session param length:', sessionParam.length);
+                
+                const sessionData = JSON.parse(this.base64ToUnicode(sessionParam));
+                console.log('Hash session data parsed successfully');
+                console.log('Title:', sessionData.title);
+                console.log('Messages count:', sessionData.msgs ? sessionData.msgs.length : 0);
+                
+                this.displaySharedSession(sessionData);
+                this.setupTwitterSharing(sessionData);
+                return;
+            } catch (error) {
+                console.error('Failed to load shared session from hash:', error);
+                this.showError(`Failed to load shared session: ${error.message}`);
+            }
+        }
+        
+        // Check for URL query parameter (fallback for old links)
+        let sessionParam = null;
+        
+        // Method 1: URLSearchParams
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            sessionParam = urlParams.get('session');
+            console.log('URLSearchParams result:', sessionParam ? sessionParam.length : 'null');
+        } catch (e) {
+            console.error('URLSearchParams failed:', e);
+        }
+        
+        // Method 2: Manual parsing if URLSearchParams failed or returned null
+        if (!sessionParam) {
+            try {
+                const search = window.location.search;
+                console.log('Raw search string:', search);
+                const match = search.match(/[?&]session=([^&]*)/);
+                if (match && match[1]) {
+                    sessionParam = decodeURIComponent(match[1]);
+                    console.log('Manual parsing result:', sessionParam.length);
+                }
+            } catch (e) {
+                console.error('Manual parsing failed:', e);
+            }
+        }
         
         if (sessionParam) {
             try {
+                console.log('Query session param found:', sessionParam.substring(0, 50) + '...');
+                console.log('Session param length:', sessionParam.length);
+                
                 const sessionData = JSON.parse(this.base64ToUnicode(sessionParam));
+                console.log('Query session data parsed successfully');
+                console.log('Title:', sessionData.title);
+                console.log('Messages count:', sessionData.msgs ? sessionData.msgs.length : 0);
+                
                 this.displaySharedSession(sessionData);
                 this.setupTwitterSharing(sessionData);
                 return;
             } catch (error) {
                 console.error('Failed to load shared session from query param:', error);
+                this.showError(`Failed to load shared session: ${error.message}`);
             }
         }
         
+        // Check for import parameter for Gist auto-import
+        if (hash.startsWith('#import=')) {
+            const gistUrl = decodeURIComponent(hash.substring(8));
+            this.autoImportGist(gistUrl);
+            return;
+        }
+        
         // Fallback to old hash method for backwards compatibility
-        const hash = window.location.hash;
         if (hash.startsWith('#shared=')) {
             const compressed = hash.substring(8);
             try {
@@ -54,10 +114,28 @@ class ClaudeCodeGUI {
         }
     }
     
+    async autoImportGist(gistUrl) {
+        // Show loading
+        this.showLoading(true);
+        
+        try {
+            await this.importFromGist(gistUrl);
+        } catch (error) {
+            console.error('Auto-import failed:', error);
+            // Show error and fallback to manual import
+            this.showError(`${t('gistImportError') || 'Gist导入失败'}: ${error.message}`);
+        } finally {
+            this.showLoading(false);
+        }
+    }
+    
     displaySharedSession(sessionData) {
         // Hide header and show shared session
         document.getElementById('header').classList.add('collapsed');
         document.getElementById('main-layout').classList.remove('hidden');
+        
+        // Hide language toggle when viewing shared session
+        this.hideLangToggle();
         
         // Hide sidebar for shared sessions
         document.getElementById('sidebar').classList.add('collapsed');
@@ -72,6 +150,10 @@ class ClaudeCodeGUI {
             <button class="action-btn" onclick="returnToHomepage()">
                 <span>⬅️</span>
                 <span>${t('back') || '返回'}</span>
+            </button>
+            <button class="action-btn twitter-share" onclick="shareSessionToX()">
+                <span>𝕏</span>
+                <span>${t('shareToX') || '分享到X'}</span>
             </button>
         `;
         
@@ -109,32 +191,42 @@ class ClaudeCodeGUI {
         `;
         container.appendChild(infoDiv);
         
-        // Display messages
-        sessionData.msgs.forEach((msg, index) => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${msg.type}`;
-            
-            const avatar = document.createElement('div');
-            avatar.className = 'message-avatar';
-            
-            if (msg.type === 'user') {
-                avatar.textContent = 'U';
-            } else {
-                avatar.innerHTML = `<img src="assets/icons/claude-avatar.svg" class="claude-avatar-svg" alt="Claude">`;
-            }
-            
-            const content = document.createElement('div');
-            content.className = 'message-content';
-            
-            const textDiv = document.createElement('div');
-            textDiv.className = 'message-text';
-            textDiv.textContent = msg.content;
-            content.appendChild(textDiv);
-            
-            messageDiv.appendChild(avatar);
-            messageDiv.appendChild(content);
-            container.appendChild(messageDiv);
-        });
+        // Display messages (handle simplified format for shared sessions)
+        if (sessionData.msgs && sessionData.msgs.length > 0) {
+            sessionData.msgs.forEach((msg, index) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.type}`;
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                
+                if (msg.type === 'user') {
+                    avatar.textContent = 'U';
+                } else {
+                    avatar.innerHTML = `<img src="assets/icons/claude-avatar.svg" class="claude-avatar-svg" alt="Claude">`;
+                }
+                
+                const content = document.createElement('div');
+                content.className = 'message-content';
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = 'message-text';
+                
+                // Handle simplified message format in shared sessions
+                textDiv.textContent = msg.content || '';
+                content.appendChild(textDiv);
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(content);
+                container.appendChild(messageDiv);
+            });
+        } else {
+            // Show message if no messages found
+            const noMsgDiv = document.createElement('div');
+            noMsgDiv.style.cssText = 'text-align: center; color: #71717a; margin: 40px 0;';
+            noMsgDiv.textContent = t('noMessagesInShare') || '分享的会话中没有消息内容';
+            container.appendChild(noMsgDiv);
+        }
         
         // Add footer
         const footerDiv = document.createElement('div');
@@ -188,12 +280,73 @@ class ClaudeCodeGUI {
     }
 
     filterSessions() {
-        const searchTerm = document.getElementById('search-input').value.toLowerCase();
-        this.filteredSessions = this.allSessions.filter(session =>
-            session.summary.toLowerCase().includes(searchTerm) ||
-            this.getProjectDisplayName(session.projectName.replace(/-/g, '/')).toLowerCase().includes(searchTerm)
-        );
-        this.renderSidebar();
+        const searchInput = document.getElementById('search-input');
+        if (!searchInput) return;
+        
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        // Clear previous timeout
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+        
+        // Debounce search to prevent performance issues
+        this.searchTimeout = setTimeout(() => {
+            try {
+                // Add performance protection for large datasets
+                if (this.allSessions.length > 1000) {
+                    console.warn('Large dataset detected, limiting search results');
+                }
+                
+                if (searchTerm === '') {
+                    this.filteredSessions = [];
+                } else if (searchTerm.length < 2) {
+                    // Don't search for single characters to improve performance
+                    return;
+                } else {
+                    // Limit search results to prevent UI freezing
+                    const maxResults = 50;
+                    this.filteredSessions = [];
+                    
+                    for (const session of this.allSessions) {
+                        if (this.filteredSessions.length >= maxResults) {
+                            break;
+                        }
+                        
+                        if (!session.summary) continue;
+                        
+                        const summaryMatch = session.summary.toLowerCase().includes(searchTerm);
+                        const projectMatch = session.projectName && 
+                            this.getProjectDisplayName(session.projectName.replace(/-/g, '/')).toLowerCase().includes(searchTerm);
+                        
+                        if (summaryMatch || projectMatch) {
+                            this.filteredSessions.push(session);
+                        }
+                    }
+                    
+                    // Show message if results were limited
+                    if (this.filteredSessions.length === maxResults) {
+                        console.log(`Search limited to ${maxResults} results for performance`);
+                    }
+                }
+                
+                this.renderSidebar();
+            } catch (error) {
+                console.error('Search failed:', error);
+                // Reset search on error
+                this.filteredSessions = [];
+                this.renderSidebar();
+                
+                // Show user-friendly error
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.style.borderColor = '#ef4444';
+                    setTimeout(() => {
+                        searchInput.style.borderColor = '';
+                    }, 2000);
+                }
+            }
+        }, 300); // 300ms debounce
     }
 
     async requestDirectoryAccess() {
@@ -275,6 +428,9 @@ ${t('confirmDialog.continue')}`
             
             // Hide header instructions
             document.getElementById('header').classList.add('collapsed');
+            
+            // Hide language toggle when navigating away from homepage
+            this.hideLangToggle();
             
             // Show main layout
             document.getElementById('main-layout').classList.remove('hidden');
@@ -655,45 +811,43 @@ ${t('vscodeOptions') || '打开方式'}:
     }
     
     showGistInstructions(sessionData) {
-        const shareUrl = this.createShareableURL(sessionData);
-        
-        // Create modal for sharing options
+        // Create simplified modal for Gist-only sharing
         const modal = document.createElement('div');
         modal.className = 'share-modal';
         modal.innerHTML = `
             <div class="share-modal-content">
                 <div class="share-modal-header">
-                    <h3>${t('shareSession') || '分享会话'}</h3>
+                    <h3>🚀 ${t('shareSession') || '分享会话'}</h3>
                     <button class="close-btn" onclick="closeShareModal()">✕</button>
                 </div>
                 <div class="share-modal-body">
                     <div class="share-option">
-                        <h4>🔗 ${t('copyToClipboard') || '复制链接'}</h4>
-                        <p>${t('copyLinkDescription') || '复制分享链接，直接发送给他人查看'}</p>
-                        <div class="share-limitation-note">
-                            <small>⚠️ ${t('shareLinkLimitation') || '注意：分享链接仅包含前10条消息，如需分享完整会话请使用Gist功能'}</small>
-                        </div>
-                        <button class="action-btn" onclick="copyShareLink()">
-                            ${t('copy') || '复制链接'}
-                        </button>
-                    </div>
-                    <div class="share-option">
-                        <h4>📝 ${t('shareViaGist') || '通过GitHub Gist分享'}</h4>
-                        <p>${t('gistDescription') || '创建一个GitHub Gist来分享这个会话（保持原始JSONL格式）'}</p>
-                        <div class="share-recommendation-note">
-                            <small>✅ ${t('gistRecommendation') || '推荐：包含完整会话内容，保持原始数据格式，便于重新导入和处理'}</small>
+                        <h4>📝 ${t('shareViaGist') || '创建Gist分享会话'}</h4>
+                        <p style="color: #a1a1aa; font-size: 12px; margin-bottom: 12px;">
+                            通过GitHub Gist分享您的完整会话记录，保持原始JSONL格式，便于他人导入查看。
+                        </p>
+                        <div class="share-flow-note" style="background: #0f1f13; border: 1px solid #2a7a2a; border-radius: 4px; padding: 12px; margin: 12px 0;">
+                            <strong style="color: #74d474;">💡 分享流程：</strong>
+                            <ol style="color: #74d474; font-size: 11px; margin: 8px 0 0 16px; line-height: 1.5;">
+                                <li>点击下方按钮，会自动复制会话内容并打开GitHub</li>
+                                <li>在GitHub页面创建<strong>公开Gist</strong>（重要：必须公开才能分享）</li>
+                                <li>复制Gist地址，粘贴到本页面生成分享链接</li>
+                                <li>分享链接给他人，点击即可直接查看会话内容</li>
+                            </ol>
                         </div>
                         <button class="action-btn gist-btn" onclick="openGistCreation()">
-                            ${t('createGist') || '创建Gist'}
+                            🚀 ${t('createGist') || '开始创建Gist'}
                         </button>
                     </div>
                     <div class="share-option">
-                        <h4>📥 ${t('importFromGist') || '从Gist导入会话'}</h4>
-                        <p>${t('gistImportDescription') || '输入GitHub Gist URL来查看分享的会话'}</p>
+                        <h4>📥 ${t('importFromGist') || '查看他人分享的会话'}</h4>
+                        <p style="color: #a1a1aa; font-size: 12px; margin-bottom: 12px;">
+                            输入他人分享的GitHub Gist地址，即可查看其会话内容。
+                        </p>
                         <div class="gist-import-section">
                             <input type="text" class="gist-url-input" placeholder="${t('gistUrlPlaceholder') || '输入Gist URL...'}" id="gist-url-input">
                             <button class="action-btn gist-btn" onclick="importFromGist()">
-                                ${t('importGist') || '导入'}
+                                📖 ${t('importGist') || '查看会话'}
                             </button>
                         </div>
                     </div>
@@ -703,10 +857,9 @@ ${t('vscodeOptions') || '打开方式'}:
         
         document.body.appendChild(modal);
         
-        // Store session data for modal functions
+        // Store session data for modal functions (simplified)
         window.currentShareData = {
-            sessionData,
-            shareUrl
+            sessionData
         };
     }
     
@@ -742,20 +895,116 @@ ${t('vscodeOptions') || '打开方式'}:
     }
     
     async shareToGist(sessionData) {
-        // Open GitHub Gist creation page with pre-filled content
+        // Prepare content and metadata
         const jsonlContent = this.sessionToJSONL(sessionData);
-        const gistUrl = 'https://gist.github.com/new';
+        
+        // Generate filename based on session data
+        const timestamp = new Date(sessionData.timestamp).toISOString().slice(0, 10);
+        const safeTitle = sessionData.summary.replace(/[^a-zA-Z0-9\u4e00-\u9fff\s-]/g, '').substring(0, 30);
+        const filename = `claude-session-${timestamp}-${safeTitle}.jsonl`;
+        
+        // Create GitHub Gist URL with parameters for filename and public setting
+        const gistUrl = new URL('https://gist.github.com/new');
+        gistUrl.searchParams.set('filename', filename);
+        gistUrl.searchParams.set('public', 'true'); // Force public gist
+        
+        // Analyze content for user feedback
+        const contentSize = jsonlContent.length;
+        const sizeInKB = Math.round(contentSize / 1024);
+        const lines = jsonlContent.split('\n');
+        const messageCount = lines.filter(line => {
+            try {
+                const parsed = JSON.parse(line);
+                return parsed.type === 'user' || parsed.type === 'assistant';
+            } catch (e) {
+                return false;
+            }
+        }).length;
         
         // Copy content to clipboard first
         try {
             await navigator.clipboard.writeText(jsonlContent);
-            alert(t('gistContentCopied') || 'Gist内容已复制到剪贴板，将打开GitHub Gist页面');
+            
+            // Show enhanced modal with size info
+            this.showGistCreationInstructions();
+            
+            // Show detailed feedback about content
+            let feedbackMessage = `✅ Gist内容已复制到剪贴板！\n\n📊 内容统计：\n- 大小：${sizeInKB} KB\n- 消息数：${messageCount} 条\n- 文件名：${filename}`;
+            
+            // Check for truncation
+            const truncationLine = lines.find(line => {
+                try {
+                    const parsed = JSON.parse(line);
+                    return parsed.type === 'truncation_info';
+                } catch (e) {
+                    return false;
+                }
+            });
+            
+            if (truncationLine) {
+                const truncationInfo = JSON.parse(truncationLine);
+                feedbackMessage += `\n\n⚠️ 由于Gist大小限制，已截断至前${truncationInfo.includedMessages}条消息`;
+            }
+            
+            feedbackMessage += '\n\n💡 提示：页面将自动设置为公开Gist，并预填文件名';
+            feedbackMessage += '\n\n将为您打开GitHub Gist创建页面...';
+            alert(feedbackMessage);
         } catch (err) {
             console.warn('Failed to copy to clipboard:', err);
+            this.showGistCreationInstructions();
+            alert('请手动复制Gist内容');
         }
         
-        window.open(gistUrl, '_blank');
-        return gistUrl;
+        window.open(gistUrl.toString(), '_blank');
+        return gistUrl.toString();
+    }
+    
+    showGistCreationInstructions() {
+        const modal = document.createElement('div');
+        modal.className = 'share-modal gist-creation-modal';
+        modal.innerHTML = `
+            <div class="share-modal-content">
+                <div class="share-modal-header">
+                    <h3>${t('createGist') || '创建Gist'}</h3>
+                    <button class="close-btn" onclick="this.closest('.share-modal').remove()">✕</button>
+                </div>
+                <div class="share-modal-body">
+                    <div class="gist-instructions">
+                        <h4>📝 ${t('gistCreationSteps') || 'Gist创建步骤'}</h4>
+                        <ol style="color: #a1a1aa; font-size: 12px; margin: 12px 0; padding-left: 20px;">
+                            <li>${t('gistStep1') || '在打开的GitHub页面中，粘贴已复制的内容'}</li>
+                            <li>${t('gistStep2') || '为文件命名（建议使用 .jsonl 扩展名）'}</li>
+                            <li>${t('gistStep3') || '添加描述（可选）'}</li>
+                            <li style="background: #1a5f1a; padding: 4px 8px; border-radius: 4px; margin: 8px 0;"><strong>🌐 ${t('gistStep4Public') || '选择"Create public gist"（重要：必须选择公开以便他人访问）'}</strong></li>
+                            <li>${t('gistStep5') || '复制创建的Gist URL'}</li>
+                        </ol>
+                        <div class="share-public-reminder" style="background: #0f1f13; border: 1px solid #2a7a2a; border-radius: 4px; padding: 12px; margin: 12px 0;">
+                            <strong style="color: #74d474;">🔑 重要提醒：</strong>
+                            <p style="color: #74d474; font-size: 11px; margin: 8px 0 0 0;">只有公开的Gist才能被他人通过分享链接直接访问和查看。如果创建私有Gist，其他人将无法看到会话内容。</p>
+                        </div>
+                        <div class="gist-url-section">
+                            <h4>🔗 ${t('shareGistUrl') || '分享Gist URL'}</h4>
+                            <p style="color: #a1a1aa; font-size: 12px; margin-bottom: 12px;">${t('shareGistUrlDesc') || '创建Gist后，将URL粘贴到下方进行社交媒体分享'}</p>
+                            <div class="gist-url-input-section">
+                                <input type="text" id="created-gist-url" placeholder="${t('pasteGistUrl') || '粘贴创建的Gist URL...'}" 
+                                       style="flex: 1; background: #262626; border: 1px solid #3f3f46; color: #ffffff; padding: 8px 10px; border-radius: 4px; font-size: 12px; font-family: inherit; margin-bottom: 12px; width: 100%;">
+                                <div class="social-share-buttons" style="display: flex; gap: 8px; justify-content: center;">
+                                    <button class="action-btn twitter-share" onclick="shareGistToTwitter()" style="background: #1d9bf0 !important; border-color: #1d9bf0 !important; color: #ffffff !important;">
+                                        <span>𝕏</span>
+                                        <span>${t('shareToX') || '分享到X'}</span>
+                                    </button>
+                                    <button class="action-btn" onclick="copyGistImportLink()">
+                                        <span>📋</span>
+                                        <span>${t('copyImportLink') || '复制导入链接'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
     }
     
     // Export functionality (keep this)
@@ -970,6 +1219,9 @@ ${t('vscodeOptions') || '打开方式'}:
         // Hide header and show imported session
         document.getElementById('header').classList.add('collapsed');
         document.getElementById('main-layout').classList.remove('hidden');
+        
+        // Hide language toggle when viewing imported gist
+        this.hideLangToggle();
         
         // Hide sidebar for imported content
         document.getElementById('sidebar').classList.add('collapsed');
@@ -1195,11 +1447,39 @@ ${t('vscodeOptions') || '打开方式'}:
         };
         jsonlContent += JSON.stringify(metadata) + '\n';
         
-        // Add all messages in their original format
-        sessionData.messages.forEach(msg => {
-            jsonlContent += JSON.stringify(msg) + '\n';
-        });
+        // Gist has a size limit, so we need to be careful about content size
+        const MAX_GIST_SIZE = 900000; // ~900KB limit for safety (GitHub limit is 1MB)
+        let currentSize = jsonlContent.length;
+        let includedMessages = 0;
         
+        // Add messages in order, but stop if we approach size limit
+        for (const msg of sessionData.messages) {
+            const msgLine = JSON.stringify(msg) + '\n';
+            
+            // Check if adding this message would exceed the limit
+            if (currentSize + msgLine.length > MAX_GIST_SIZE) {
+                console.warn(`Gist size limit approaching. Included ${includedMessages} of ${sessionData.messages.length} messages.`);
+                break;
+            }
+            
+            jsonlContent += msgLine;
+            currentSize += msgLine.length;
+            includedMessages++;
+        }
+        
+        // Add truncation notice if messages were excluded
+        if (includedMessages < sessionData.messages.length) {
+            const truncationNotice = {
+                type: 'truncation_info',
+                message: `Note: This Gist contains ${includedMessages} of ${sessionData.messages.length} messages due to size limitations.`,
+                totalMessages: sessionData.messages.length,
+                includedMessages: includedMessages,
+                truncatedAt: new Date().toISOString()
+            };
+            jsonlContent += JSON.stringify(truncationNotice) + '\n';
+        }
+        
+        console.log(`Gist content prepared: ${jsonlContent.length} bytes, ${includedMessages}/${sessionData.messages.length} messages`);
         return jsonlContent;
     }
     
@@ -1249,132 +1529,92 @@ ${t('vscodeOptions') || '打开方式'}:
         return markdown;
     }
     
-    createShareableURL(sessionData) {
-        // Use URL fragment to store compressed session data
-        const compressed = this.compressSessionData(sessionData);
-        const baseUrl = window.location.origin + window.location.pathname;
-        return `${baseUrl}?session=${compressed}`;
-    }
-    
-    // Unicode-safe base64 encoding
-    unicodeToBase64(str) {
-        try {
-            // Convert string to UTF-8 bytes, then to base64
-            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-                return String.fromCharCode(parseInt(p1, 16));
-            }));
-        } catch (error) {
-            console.warn('Failed to encode to base64:', error);
-            // Fallback: just use URL encoding without base64
-            return encodeURIComponent(str);
-        }
-    }
-    
-    // Unicode-safe base64 decoding  
+    // Unicode-safe base64 decoding (keep for backwards compatibility and Gist import)
     base64ToUnicode(str) {
         try {
-            // Check if it's base64 encoded
-            if (str.match(/^[A-Za-z0-9+/]+=*$/)) {
-                return decodeURIComponent(Array.prototype.map.call(atob(str), (c) => {
+            console.log('Decoding input length:', str.length);
+            console.log('Input sample:', str.substring(0, 50));
+            
+            // Clean the string
+            let cleanStr = str.replace(/\s/g, ''); // Remove whitespace
+            
+            // Check if this looks like base64
+            const isBase64 = /^[A-Za-z0-9+/]*={0,2}$/.test(cleanStr);
+            
+            if (!isBase64) {
+                console.log('Not base64 format, treating as URL encoded');
+                return decodeURIComponent(cleanStr);
+            }
+            
+            // Add padding if needed
+            const paddingNeeded = (4 - (cleanStr.length % 4)) % 4;
+            if (paddingNeeded > 0) {
+                cleanStr += '='.repeat(paddingNeeded);
+                console.log('Added padding:', paddingNeeded);
+            }
+            
+            // Try to decode base64
+            const decoded = atob(cleanStr);
+            console.log('Base64 decode successful, length:', decoded.length);
+            
+            // Check if the decoded content starts with % (indicating URL encoding)
+            if (decoded.startsWith('%')) {
+                console.log('Detected URL-encoded content, decoding directly');
+                try {
+                    const directResult = decodeURIComponent(decoded);
+                    JSON.parse(directResult);
+                    return directResult;
+                } catch (e) {
+                    console.log('Direct URL decode failed:', e.message);
+                }
+            }
+            
+            // Try UTF-8 decoding for Unicode content
+            try {
+                const utf8Result = decodeURIComponent(Array.prototype.map.call(decoded, (c) => {
                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                 }).join(''));
-            } else {
-                // Already URL encoded
-                return decodeURIComponent(str);
+                
+                console.log('UTF-8 decode successful');
+                
+                // Validate that it's valid JSON
+                JSON.parse(utf8Result);
+                return utf8Result;
+            } catch (utf8Error) {
+                console.log('UTF-8 decode failed, trying plain decode:', utf8Error.message);
+                
+                // Fallback: check if it's plain ASCII JSON
+                try {
+                    JSON.parse(decoded);
+                    console.log('Using plain JSON');
+                    return decoded;
+                } catch (jsonError) {
+                    console.log('Plain JSON parse failed:', jsonError.message);
+                    throw utf8Error;
+                }
             }
+            
         } catch (error) {
-            console.warn('Failed to decode from base64:', error);
-            return str;
+            console.error('Base64 decode failed:', error);
+            throw new Error(`Failed to decode: ${error.message}`);
         }
-    }
-    
-    compressSessionData(sessionData) {
-        // Simplified compression - in production, use LZString or similar
-        const simplified = {
-            id: sessionData.id,
-            title: sessionData.summary,
-            time: sessionData.timestamp,
-            msgs: sessionData.messages.slice(0, 10).map(msg => ({
-                type: msg.type,
-                content: this.extractTextContent(msg)
-            }))
-        };
-        
-        return this.unicodeToBase64(JSON.stringify(simplified));
-    }
-    
-    extractTextContent(msg) {
-        if (msg.type === 'user') {
-            if (typeof msg.message.content === 'string') {
-                return msg.message.content.substring(0, 500);
-            } else if (Array.isArray(msg.message.content)) {
-                return msg.message.content
-                    .filter(item => item.type === 'text')
-                    .map(item => item.text)
-                    .join('\n')
-                    .substring(0, 500);
-            }
-        } else if (msg.type === 'assistant' && msg.message.content) {
-            return msg.message.content
-                .filter(item => item.type === 'text')
-                .map(item => item.text)
-                .join('\n')
-                .substring(0, 500);
-        }
-        return '';
-    }
-    
-    shareViaURL(sessionData) {
-        const shareUrl = this.createShareableURL(sessionData);
-        
-        // Copy to clipboard
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            this.showShareSuccess(shareUrl);
-        }).catch(() => {
-            this.showManualShare(shareUrl);
-        });
-    }
-    
-    showShareSuccess(url) {
-        const message = t('shareSuccess') || '分享链接已复制到剪贴板！';
-        alert(`${message}
-
-${url}`);
-    }
-    
-    showManualShare(url) {
-        const message = t('shareManual') || '请手动复制分享链接：';
-        prompt(message, url);
-    }
-    
-    // Export functionality
-    async exportSession() {
-        if (!this.currentSession) return;
-        
-        const sessionData = await this.prepareSessionForSharing(this.currentSession);
-        const markdown = this.sessionToMarkdown(sessionData);
-        
-        // Create and download file
-        const blob = new Blob([markdown], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `session-${sessionData.id}-${sessionData.summary.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '-')}.md`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        
-        URL.revokeObjectURL(url);
     }
     
     // Return to homepage functionality
     returnToHomepage() {
+        // Clear URL hash to prevent returning to shared session
+        if (window.location.hash) {
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+        }
+        
         // Hide main layout
         document.getElementById("main-layout").classList.add("hidden");
         
         // Show header
         document.getElementById("header").classList.remove("collapsed");
+        
+        // Show language toggle when returning to homepage
+        this.showLangToggle();
         
         // Clear current session
         this.currentSession = null;
@@ -1408,6 +1648,21 @@ ${url}`);
         const fabContainer = document.getElementById("fab-container");
         if (fabContainer) {
             fabContainer.classList.remove("visible");
+        }
+    }
+    
+    // Language toggle controls
+    showLangToggle() {
+        const langToggle = document.querySelector(".language-toggle");
+        if (langToggle) {
+            langToggle.style.display = "flex";
+        }
+    }
+    
+    hideLangToggle() {
+        const langToggle = document.querySelector(".language-toggle");
+        if (langToggle) {
+            langToggle.style.display = "none";
         }
     }
 }
@@ -1483,17 +1738,6 @@ window.importManualGistContent = () => {
     // Display the content
     window.claudeGUI.displayImportedGist(gistData);
 };
-window.copyShareLink = async () => {
-    if (window.currentShareData) {
-        try {
-            await navigator.clipboard.writeText(window.currentShareData.shareUrl);
-            alert(t('shareSuccess') || '分享链接已复制到剪贴板！');
-        } catch (err) {
-            prompt(t('manualCopy') || '请手动复制链接:', window.currentShareData.shareUrl);
-        }
-        window.closeShareModal();
-    }
-};
 window.importFromGist = async () => {
     const gistUrl = document.getElementById('gist-url-input').value.trim();
     if (!gistUrl) {
@@ -1556,5 +1800,129 @@ window.toggleToolParams = (toolId) => {
     
     content.classList.toggle('collapsed');
     toggle.textContent = content.classList.contains('collapsed') ? '▼' : '▲';
+};
+
+window.shareGistToTwitter = () => {
+    const gistUrl = document.getElementById('created-gist-url').value.trim();
+    if (!gistUrl) {
+        alert(t('pleaseEnterGistUrl') || '请输入Gist URL');
+        return;
+    }
+    
+    // Generate import link for this app
+    const appUrl = window.location.origin + window.location.pathname;
+    const importUrl = `${appUrl}#import=${encodeURIComponent(gistUrl)}`;
+    
+    const text = `🚀 Check out this Claude Code session! Click to import and view in your browser:`;
+    const hashtags = 'ClaudeCode,AI,Programming,OpenSource';
+    
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(importUrl)}&hashtags=${hashtags}`;
+    window.open(twitterUrl, '_blank');
+    
+    // Close the modal
+    document.querySelector('.gist-creation-modal').remove();
+};
+
+window.copyGistImportLink = () => {
+    const gistUrl = document.getElementById('created-gist-url').value.trim();
+    if (!gistUrl) {
+        alert(t('pleaseEnterGistUrl') || '请输入Gist URL');
+        return;
+    }
+    
+    // Generate import link for this app
+    const appUrl = window.location.origin + window.location.pathname;
+    const importUrl = `${appUrl}#import=${encodeURIComponent(gistUrl)}`;
+    
+    navigator.clipboard.writeText(importUrl).then(() => {
+        alert(t('importLinkCopied') || '导入链接已复制到剪贴板！用户点击该链接即可直接导入Gist会话');
+    }).catch(() => {
+        prompt(t('manualCopy') || '请手动复制链接:', importUrl);
+    });
+    
+    // Close the modal
+    document.querySelector('.gist-creation-modal').remove();
+};
+
+
+
+window.shareSessionToX = () => {
+    // Get current shared session data from URL
+    const hash = window.location.hash;
+    const currentUrl = window.location.href;
+    
+    let sessionTitle = 'Claude Code会话';
+    
+    // Try to extract session title from the page
+    const titleElement = document.getElementById('main-title');
+    if (titleElement && titleElement.textContent.includes('📤')) {
+        sessionTitle = titleElement.textContent.replace('📤 ', '');
+    }
+    
+    const text = `🚀 查看这个Claude Code会话："${sessionTitle}"`;
+    const hashtags = 'ClaudeCode,AI,Programming,CodeSession';
+    
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentUrl)}&hashtags=${hashtags}`;
+    window.open(twitterUrl, '_blank');
+};
+
+
+// Add global function for homepage Gist import
+window.openGistImportDialog = () => {
+    // Create modal for Gist import from homepage
+    const modal = document.createElement('div');
+    modal.className = 'share-modal';
+    modal.innerHTML = `
+        <div class="share-modal-content">
+            <div class="share-modal-header">
+                <h3>🌐 查看他人分享的会话</h3>
+                <button class="close-btn" onclick="closeShareModal()">✕</button>
+            </div>
+            <div class="share-modal-body">
+                <div class="share-option">
+                    <h4>📖 输入Gist地址</h4>
+                    <p style="color: #a1a1aa; font-size: 12px; margin-bottom: 12px;">
+                        输入他人分享的GitHub Gist地址，即可查看其会话内容。支持完整URL或Gist ID。
+                    </p>
+                    <div class="gist-import-examples" style="background: #13141a; border: 1px solid #3f3f46; border-radius: 4px; padding: 10px; margin: 12px 0;">
+                        <small style="color: #60a5fa;">💡 支持的格式：</small>
+                        <ul style="color: #71717a; font-size: 11px; margin: 6px 0 0 16px; line-height: 1.4;">
+                            <li>完整URL：https://gist.github.com/username/abc123...</li>
+                            <li>Gist ID：abc123def456...</li>
+                        </ul>
+                    </div>
+                    <div class="gist-import-section">
+                        <input type="text" class="gist-url-input" placeholder="输入Gist URL或ID..." id="homepage-gist-input" style="width: 100%; margin-bottom: 12px;">
+                        <button class="action-btn gist-btn" onclick="importFromHomepage()" style="width: 100%;">
+                            🚀 查看会话
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+};
+
+window.importFromHomepage = async () => {
+    const gistUrl = document.getElementById('homepage-gist-input').value.trim();
+    if (!gistUrl) {
+        alert('请输入Gist URL或ID');
+        return;
+    }
+    
+    window.closeShareModal();
+    
+    // Show loading
+    document.getElementById('loading').classList.remove('hidden');
+    
+    try {
+        await window.claudeGUI.importFromGist(gistUrl);
+    } catch (error) {
+        console.error('Import failed:', error);
+    } finally {
+        document.getElementById('loading').classList.add('hidden');
+    }
 };
 
