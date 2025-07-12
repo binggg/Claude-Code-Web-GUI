@@ -16,6 +16,8 @@ A simple and practical Claude Code session browser that runs entirely in your br
 
 English | [中文](README_ZH.md)
 
+https://github.com/user-attachments/assets/039dc640-d5fc-4c29-9bb8-a386bd1a9da8
+
 > [!TIP]
 > ⭐ Show your support — star the repo
 
