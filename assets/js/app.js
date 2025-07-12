@@ -827,15 +827,15 @@ ${t('vscodeOptions') || '打开方式'}:
                     <div class="share-option">
                         <h4>📝 ${t('shareViaGist') || '创建Gist分享会话'}</h4>
                         <p style="color: #a1a1aa; font-size: 12px; margin-bottom: 12px;">
-                            通过GitHub Gist分享您的完整会话记录，保持原始JSONL格式，便于他人导入查看。
+                            ${t('gistDescription2') || '通过GitHub Gist分享您的完整会话记录，保持原始JSONL格式，便于他人导入查看。'}
                         </p>
                         <div class="share-flow-note" style="background: #0f1f13; border: 1px solid #2a7a2a; border-radius: 4px; padding: 12px; margin: 12px 0;">
-                            <strong style="color: #74d474;">💡 分享流程：</strong>
+                            <strong style="color: #74d474;">💡 ${t('gistFlowTitle') || '分享流程：'}</strong>
                             <ol style="color: #74d474; font-size: 11px; margin: 8px 0 0 16px; line-height: 1.5;">
-                                <li>点击下方按钮，会自动复制会话内容并打开GitHub</li>
-                                <li>在GitHub页面创建<strong>公开Gist</strong>（重要：必须公开才能分享）</li>
-                                <li>复制Gist地址，粘贴到本页面生成分享链接</li>
-                                <li>分享链接给他人，点击即可直接查看会话内容</li>
+                                <li>${t('gistFlowStep1') || '点击下方按钮，会自动复制会话内容并打开GitHub'}</li>
+                                <li>${t('gistFlowStep2') || '在GitHub页面创建<strong>公开Gist</strong>（重要：必须公开才能分享）'}</li>
+                                <li>${t('gistFlowStep3') || '复制Gist地址，粘贴到本页面生成分享链接'}</li>
+                                <li>${t('gistFlowStep4') || '分享链接给他人，点击即可直接查看会话内容'}</li>
                             </ol>
                         </div>
                         <button class="action-btn gist-btn" onclick="openGistCreation()">
@@ -845,7 +845,7 @@ ${t('vscodeOptions') || '打开方式'}:
                     <div class="share-option">
                         <h4>📥 ${t('importFromGist') || '查看他人分享的会话'}</h4>
                         <p style="color: #a1a1aa; font-size: 12px; margin-bottom: 12px;">
-                            输入他人分享的GitHub Gist地址，即可查看其会话内容。
+                            ${t('gistImportDescription2') || '输入他人分享的GitHub Gist地址，即可查看其会话内容。'}
                         </p>
                         <div class="gist-import-section">
                             <input type="text" class="gist-url-input" placeholder="${t('gistUrlPlaceholder') || '输入Gist URL...'}" id="gist-url-input">
@@ -922,7 +922,8 @@ ${t('vscodeOptions') || '打开方式'}:
             this.showGistCreationInstructions();
             
             // Show detailed feedback about content
-            let feedbackMessage = `✅ Gist内容已复制到剪贴板！\n\n📊 内容统计：\n- 大小：${sizeInKB} KB\n- 消息数：${messageCount} 条`;
+            let feedbackMessage = t('gistContentCopiedMessage') || `✅ Gist内容已复制到剪贴板！\n\n📊 内容统计：\n- 大小：${sizeInKB} KB\n- 消息数：${messageCount} 条`;
+            feedbackMessage = feedbackMessage.replace('{{size}}', sizeInKB).replace('{{count}}', messageCount);
             
             // Check for truncation
             const truncationLine = lines.find(line => {
@@ -936,15 +937,17 @@ ${t('vscodeOptions') || '打开方式'}:
             
             if (truncationLine) {
                 const truncationInfo = JSON.parse(truncationLine);
-                feedbackMessage += `\n\n⚠️ 由于Gist大小限制，已截断至前${truncationInfo.includedMessages}条消息`;
+                const warningText = t('gistTruncatedWarning') || `\n\n⚠️ 由于Gist大小限制，已截断至前{{count}}条消息`;
+                feedbackMessage += warningText.replace('{{count}}', truncationInfo.includedMessages);
             }
             
-            feedbackMessage += '\n\n将为您打开GitHub Gist创建页面...';
+            const openingText = t('gistOpeningMessage') || '\n\n将为您打开GitHub Gist创建页面...';
+            feedbackMessage += openingText;
             alert(feedbackMessage);
         } catch (err) {
             console.warn('Failed to copy to clipboard:', err);
             this.showGistCreationInstructions();
-            alert('请手动复制Gist内容');
+            alert(t('manualCopyGist') || '请手动复制Gist内容');
         }
         
         // Open simple GitHub Gist creation page
@@ -1217,12 +1220,13 @@ ${t('vscodeOptions') || '打开方式'}:
         const currentUrl = window.location.href;
         
         // Extract first user message for description
-        let description = '🚀 Claude Code 智能编程会话分享';
+        let description = t('smartDescription') || '🚀 Claude Code 智能编程会话分享';
         if (sessionData.msgs && sessionData.msgs.length > 0) {
             const firstUserMsg = sessionData.msgs.find(msg => msg.type === 'user');
             if (firstUserMsg && firstUserMsg.content) {
                 const contentPreview = firstUserMsg.content.substring(0, 100);
-                description = `💬 "${contentPreview}${contentPreview.length >= 100 ? '...' : ''}" - Claude Code 会话分享`;
+                const sharingText = t('sessionSharing') || '💬 "{{content}}" - Claude Code 会话分享';
+                description = sharingText.replace('{{content}}', contentPreview + (contentPreview.length >= 100 ? '...' : ''));
             }
         }
         
@@ -1230,18 +1234,22 @@ ${t('vscodeOptions') || '打开方式'}:
         this.updateMetaTag('description', description);
         
         // Open Graph tags
-        this.updateMetaTag('og:title', `${sessionData.title} - Claude Code 会话`);
+        const titleText = t('sessionTitle') || '{{title}} - Claude Code 会话';
+        this.updateMetaTag('og:title', titleText.replace('{{title}}', sessionData.title));
         this.updateMetaTag('og:description', description);
         this.updateMetaTag('og:url', currentUrl);
         this.updateMetaTag('og:type', 'article');
         
         // Twitter Card tags
-        this.updateMetaTag('twitter:title', `${sessionData.title} - Claude Code 会话`);
+        this.updateMetaTag('twitter:title', titleText.replace('{{title}}', sessionData.title));
         this.updateMetaTag('twitter:description', description);
         this.updateMetaTag('twitter:url', currentUrl);
         
         // Add session-specific info
-        const sessionInfo = `📊 项目: ${sessionData.projectName || 'Unknown'} | 时间: ${new Date(sessionData.timestamp).toLocaleDateString()}`;
+        const infoText = t('projectInfo2') || '📊 项目: {{project}} | 时间: {{time}}';
+        const sessionInfo = infoText
+            .replace('{{project}}', sessionData.projectName || 'Unknown')
+            .replace('{{time}}', new Date(sessionData.timestamp).toLocaleDateString());
         this.updateMetaTag('og:article:author', 'Claude Code Web GUI');
         this.updateMetaTag('og:article:section', sessionInfo);
     }
@@ -1403,12 +1411,12 @@ ${t('vscodeOptions') || '打开方式'}:
             const sessionInfoDiv = document.createElement('div');
             sessionInfoDiv.className = 'imported-session-info';
             sessionInfoDiv.innerHTML = `
-                <h3>📄 会话信息</h3>
-                <p><strong>会话ID:</strong> ${sessionInfo.id}</p>
-                <p><strong>摘要:</strong> ${sessionInfo.summary}</p>
-                <p><strong>项目:</strong> ${sessionInfo.projectName?.replace(/-/g, '/') || 'Unknown'}</p>
-                <p><strong>时间:</strong> ${new Date(sessionInfo.timestamp).toLocaleString()}</p>
-                <p><strong>分享时间:</strong> ${new Date(sessionInfo.sharedAt).toLocaleString()}</p>
+                <h3>📄 ${t('sessionInfo') || '会话信息'}</h3>
+                <p><strong>${t('sessionIdLabel') || '会话ID:'}:</strong> ${sessionInfo.id}</p>
+                <p><strong>${t('summaryLabel') || '摘要:'}:</strong> ${sessionInfo.summary}</p>
+                <p><strong>${t('projectLabel') || '项目:'}:</strong> ${sessionInfo.projectName?.replace(/-/g, '/') || 'Unknown'}</p>
+                <p><strong>${t('timeLabel') || '时间:'}:</strong> ${new Date(sessionInfo.timestamp).toLocaleString()}</p>
+                <p><strong>${t('sharedTimeLabel') || '分享时间:'}:</strong> ${new Date(sessionInfo.sharedAt).toLocaleString()}</p>
                 <hr style="margin: 16px 0; border: 1px solid #262626;">
             `;
             container.appendChild(sessionInfoDiv);
@@ -1473,11 +1481,11 @@ ${t('vscodeOptions') || '打开方式'}:
                                 toolDiv.innerHTML = `
                                     <div class="tool-call-header" onclick="toggleToolParams('${toolId}')">
                                         <div class="tool-call-icon">🔧</div>
-                                        <span>工具调用: ${item.name}</span>
+                                        <span>${t('toolCall') || '工具调用'}: ${item.name}</span>
                                         <div class="tool-toggle">▼</div>
                                     </div>
                                     <div class="tool-call-content collapsed" id="${toolId}">
-                                        <div>参数:</div>
+                                        <div>${t('parametersLabel') || '参数:'}:</div>
                                         <pre class="tool-call-input">${JSON.stringify(item.input, null, 2)}</pre>
                                     </div>
                                 `;
