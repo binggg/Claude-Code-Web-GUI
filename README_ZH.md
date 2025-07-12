@@ -1,4 +1,4 @@
-# Claude Code Web GUI
+# <img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="24" style="vertical-align: middle;"> Claude Code Web GUI
 
 一个简洁实用的 Claude Code 会话浏览器，完全在浏览器中运行，无需服务器。
 
