@@ -130,6 +130,9 @@ class ClaudeCodeGUI {
     }
     
     displaySharedSession(sessionData) {
+        // Update page meta tags for social sharing
+        this.updateMetaTagsForSession(sessionData);
+        
         // Hide header and show shared session
         document.getElementById('header').classList.add('collapsed');
         document.getElementById('main-layout').classList.remove('hidden');
@@ -1206,7 +1209,76 @@ ${t('vscodeOptions') || '打开方式'}:
         document.body.appendChild(modal);
     }
     
+    updateMetaTagsForSession(sessionData) {
+        // Update page title
+        document.title = `${sessionData.title} - Claude Code Web GUI`;
+        
+        // Get current URL for sharing
+        const currentUrl = window.location.href;
+        
+        // Extract first user message for description
+        let description = '🚀 Claude Code 智能编程会话分享';
+        if (sessionData.msgs && sessionData.msgs.length > 0) {
+            const firstUserMsg = sessionData.msgs.find(msg => msg.type === 'user');
+            if (firstUserMsg && firstUserMsg.content) {
+                const contentPreview = firstUserMsg.content.substring(0, 100);
+                description = `💬 "${contentPreview}${contentPreview.length >= 100 ? '...' : ''}" - Claude Code 会话分享`;
+            }
+        }
+        
+        // Update or create meta tags
+        this.updateMetaTag('description', description);
+        
+        // Open Graph tags
+        this.updateMetaTag('og:title', `${sessionData.title} - Claude Code 会话`);
+        this.updateMetaTag('og:description', description);
+        this.updateMetaTag('og:url', currentUrl);
+        this.updateMetaTag('og:type', 'article');
+        
+        // Twitter Card tags
+        this.updateMetaTag('twitter:title', `${sessionData.title} - Claude Code 会话`);
+        this.updateMetaTag('twitter:description', description);
+        this.updateMetaTag('twitter:url', currentUrl);
+        
+        // Add session-specific info
+        const sessionInfo = `📊 项目: ${sessionData.projectName || 'Unknown'} | 时间: ${new Date(sessionData.timestamp).toLocaleDateString()}`;
+        this.updateMetaTag('og:article:author', 'Claude Code Web GUI');
+        this.updateMetaTag('og:article:section', sessionInfo);
+    }
+    
+    updateMetaTag(property, content) {
+        // Handle different meta tag types
+        let selector;
+        let attributeName;
+        
+        if (property.startsWith('og:') || property === 'article:author' || property === 'article:section') {
+            selector = `meta[property="${property}"]`;
+            attributeName = 'property';
+        } else if (property.startsWith('twitter:')) {
+            selector = `meta[name="${property}"]`;
+            attributeName = 'name';
+        } else {
+            selector = `meta[name="${property}"]`;
+            attributeName = 'name';
+        }
+        
+        let metaTag = document.querySelector(selector);
+        
+        if (metaTag) {
+            metaTag.setAttribute('content', content);
+        } else {
+            // Create new meta tag if it doesn't exist
+            metaTag = document.createElement('meta');
+            metaTag.setAttribute(attributeName, property);
+            metaTag.setAttribute('content', content);
+            document.head.appendChild(metaTag);
+        }
+    }
+    
     displayImportedGist(gistData) {
+        // Update page meta tags for Gist sharing
+        this.updateMetaTagsForGist(gistData);
+        
         // Hide header and show imported session
         document.getElementById('header').classList.add('collapsed');
         document.getElementById('main-layout').classList.remove('hidden');
@@ -1432,6 +1504,36 @@ ${t('vscodeOptions') || '打开方式'}:
         }
     }
     
+    updateMetaTagsForGist(gistData) {
+        // Update page title
+        document.title = `${gistData.title} - Claude Code Gist 查看`;
+        
+        // Create description for Gist
+        const description = `📋 从 GitHub Gist 导入的 Claude Code 会话："${gistData.title}" - 在线查看和学习 AI 编程对话`;
+        
+        // Get current URL
+        const currentUrl = window.location.href;
+        
+        // Update meta tags
+        this.updateMetaTag('description', description);
+        
+        // Open Graph tags
+        this.updateMetaTag('og:title', `${gistData.title} - Claude Code Gist`);
+        this.updateMetaTag('og:description', description);
+        this.updateMetaTag('og:url', currentUrl);
+        this.updateMetaTag('og:type', 'article');
+        
+        // Twitter Card tags  
+        this.updateMetaTag('twitter:title', `${gistData.title} - Claude Code Gist`);
+        this.updateMetaTag('twitter:description', description);
+        this.updateMetaTag('twitter:url', currentUrl);
+        
+        // Add Gist-specific info
+        const gistInfo = `📅 创建: ${new Date(gistData.created).toLocaleDateString()} | 格式: ${gistData.isJSONL ? 'JSONL' : 'Markdown'}`;
+        this.updateMetaTag('og:article:author', 'Claude Code Web GUI');
+        this.updateMetaTag('og:article:section', gistInfo);
+    }
+    
     shareGistToX(gistData) {
         const text = `🚀 Check out this Claude Code session from GitHub Gist: "${gistData.title}"`;
         const hashtags = 'ClaudeCode,AI,Programming,Gist';
@@ -1616,6 +1718,9 @@ ${t('vscodeOptions') || '打开方式'}:
             window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
         }
         
+        // Reset meta tags to default
+        this.resetMetaTags();
+        
         // Hide main layout
         document.getElementById("main-layout").classList.add("hidden");
         
@@ -1643,6 +1748,31 @@ ${t('vscodeOptions') || '打开方式'}:
         if (fabContainer) {
             fabContainer.classList.remove("visible");
         }
+    }
+    
+    resetMetaTags() {
+        // Reset page title
+        document.title = 'Claude Code Web GUI';
+        
+        // Reset description
+        this.updateMetaTag('description', '一个简洁实用的 Claude Code 会话浏览器，完全在浏览器中运行，支持本地浏览、便捷分享、导入查看等功能。');
+        
+        // Reset Open Graph tags
+        this.updateMetaTag('og:title', 'Claude Code Web GUI - 智能代码会话浏览器');
+        this.updateMetaTag('og:description', '🚀 完全在浏览器中运行的 Claude Code 会话浏览器，支持本地浏览、便捷分享、隐私保护。无需服务器，开箱即用！');
+        this.updateMetaTag('og:url', 'https://binggg.github.io/Claude-Code-Web-GUI/');
+        this.updateMetaTag('og:type', 'website');
+        
+        // Reset Twitter Card tags
+        this.updateMetaTag('twitter:title', 'Claude Code Web GUI - 智能代码会话浏览器');
+        this.updateMetaTag('twitter:description', '🚀 完全在浏览器中运行的 Claude Code 会话浏览器，支持本地浏览、便捷分享、隐私保护。无需服务器，开箱即用！');
+        this.updateMetaTag('twitter:url', 'https://binggg.github.io/Claude-Code-Web-GUI/');
+        
+        // Remove article-specific meta tags
+        const articleAuthor = document.querySelector('meta[property="og:article:author"]');
+        const articleSection = document.querySelector('meta[property="og:article:section"]');
+        if (articleAuthor) articleAuthor.remove();
+        if (articleSection) articleSection.remove();
     }
     
     // FAB button controls
