@@ -679,9 +679,9 @@ ${t('vscodeOptions') || '打开方式'}:
                     </div>
                     <div class="share-option">
                         <h4>📝 ${t('shareViaGist') || '通过GitHub Gist分享'}</h4>
-                        <p>${t('gistDescription') || '创建一个GitHub Gist来分享这个会话'}</p>
+                        <p>${t('gistDescription') || '创建一个GitHub Gist来分享这个会话（保持原始JSONL格式）'}</p>
                         <div class="share-recommendation-note">
-                            <small>✅ ${t('gistRecommendation') || '推荐：包含完整会话内容，支持Markdown格式，便于长期保存和分享'}</small>
+                            <small>✅ ${t('gistRecommendation') || '推荐：包含完整会话内容，保持原始数据格式，便于重新导入和处理'}</small>
                         </div>
                         <button class="action-btn gist-btn" onclick="openGistCreation()">
                             ${t('createGist') || '创建Gist'}
@@ -743,12 +743,12 @@ ${t('vscodeOptions') || '打开方式'}:
     
     async shareToGist(sessionData) {
         // Open GitHub Gist creation page with pre-filled content
-        const markdown = this.sessionToMarkdown(sessionData);
+        const jsonlContent = this.sessionToJSONL(sessionData);
         const gistUrl = 'https://gist.github.com/new';
         
         // Copy content to clipboard first
         try {
-            await navigator.clipboard.writeText(markdown);
+            await navigator.clipboard.writeText(jsonlContent);
             alert(t('gistContentCopied') || 'Gist内容已复制到剪贴板，将打开GitHub Gist页面');
         } catch (err) {
             console.warn('Failed to copy to clipboard:', err);
@@ -839,28 +839,36 @@ ${t('vscodeOptions') || '打开方式'}:
             if (response.ok) {
                 const gist = await response.json();
                 
-                // Find markdown file (be more flexible with detection)
+                // Find the session file (now look for JSONL format first, then fall back to markdown)
                 const files = Object.values(gist.files);
-                const markdownFile = files.find(file => 
-                    file.filename.endsWith('.md') || 
-                    file.type === 'text/markdown' ||
+                let sessionFile = files.find(file => 
+                    file.filename.endsWith('.jsonl') || 
                     file.type === 'text/plain' ||
                     file.filename.toLowerCase().includes('session') ||
-                    file.filename.toLowerCase().includes('claude') ||
-                    file.filename.toLowerCase().includes('conversation')
+                    file.filename.toLowerCase().includes('claude')
                 );
                 
-                if (!markdownFile) {
-                    throw new Error(t('noMarkdownInGist') || 'Gist中未找到Markdown文件');
+                // If no JSONL file found, look for markdown files for backward compatibility
+                if (!sessionFile) {
+                    sessionFile = files.find(file => 
+                        file.filename.endsWith('.md') || 
+                        file.type === 'text/markdown' ||
+                        file.filename.toLowerCase().includes('conversation')
+                    );
+                }
+                
+                if (!sessionFile) {
+                    throw new Error(t('noSessionFileInGist') || 'Gist中未找到会话文件');
                 }
                 
                 return {
                     id: gistId,
-                    title: gist.description || markdownFile.filename,
-                    content: markdownFile.content,
+                    title: gist.description || sessionFile.filename,
+                    content: sessionFile.content,
                     url: gist.html_url,
                     created: gist.created_at,
-                    updated: gist.updated_at
+                    updated: gist.updated_at,
+                    isJSONL: sessionFile.filename.endsWith('.jsonl') || sessionFile.type === 'text/plain'
                 };
             } else if (response.status === 403) {
                 // Rate limit exceeded, try fallback method
@@ -886,8 +894,12 @@ ${t('vscodeOptions') || '打开方式'}:
     }
     
     async fetchGistContentFallback(gistId) {
-        // Fallback: Try common raw URLs for markdown files
+        // Fallback: Try common raw URLs for session files
         const commonFilenames = [
+            'session.jsonl',
+            'claude-session.jsonl', 
+            'conversation.jsonl',
+            'chat.jsonl',
             'session.md',
             'claude-session.md', 
             'conversation.md',
@@ -910,7 +922,8 @@ ${t('vscodeOptions') || '打开方式'}:
                         content: content,
                         url: `https://gist.github.com/${gistId}`,
                         created: new Date().toISOString(),
-                        updated: new Date().toISOString()
+                        updated: new Date().toISOString(),
+                        isJSONL: filename.endsWith('.jsonl')
                     };
                 }
             } catch (error) {
@@ -1014,16 +1027,22 @@ ${t('vscodeOptions') || '打开方式'}:
             <p><strong>${t('gistId') || 'Gist ID'}:</strong> ${gistData.id}</p>
             <p><strong>${t('created') || '创建时间'}:</strong> ${new Date(gistData.created).toLocaleString()}</p>
             <p><strong>${t('updated') || '更新时间'}:</strong> ${new Date(gistData.updated).toLocaleString()}</p>
+            <p><strong>${t('format') || '格式'}:</strong> ${gistData.isJSONL ? 'JSONL (原始格式)' : 'Markdown'}</p>
             <p><a href="${gistData.url}" target="_blank" style="color: #667eea;">${t('viewOnGitHub') || '在GitHub查看'}</a></p>
             <hr style="margin: 20px 0; border: 1px solid #262626;">
         `;
         container.appendChild(infoDiv);
         
-        // Render markdown content
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'imported-content';
-        contentDiv.innerHTML = `<pre class="markdown-content">${gistData.content}</pre>`;
-        container.appendChild(contentDiv);
+        // Render content based on format
+        if (gistData.isJSONL) {
+            this.renderJSONLContent(gistData.content, container);
+        } else {
+            // Render as markdown (legacy format)
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'imported-content';
+            contentDiv.innerHTML = `<pre class="markdown-content">${gistData.content}</pre>`;
+            container.appendChild(contentDiv);
+        }
         
         // Add footer
         const footerDiv = document.createElement('div');
@@ -1033,6 +1052,155 @@ ${t('vscodeOptions') || '打开方式'}:
             <p><a href="${window.location.origin}${window.location.pathname}" style="color: #667eea;">${t('backToApp') || '返回应用'}</a></p>
         `;
         container.appendChild(footerDiv);
+    }
+    
+    renderJSONLContent(jsonlContent, container) {
+        const lines = jsonlContent.trim().split('\n');
+        let sessionInfo = null;
+        const messages = [];
+        
+        // Parse JSONL content
+        for (const line of lines) {
+            try {
+                const record = JSON.parse(line);
+                if (record.type === 'session_info') {
+                    sessionInfo = record;
+                } else if (record.type === 'user' || record.type === 'assistant') {
+                    messages.push(record);
+                }
+            } catch (e) {
+                console.warn('Failed to parse JSONL line:', line);
+            }
+        }
+        
+        // Show session info if available
+        if (sessionInfo) {
+            const sessionInfoDiv = document.createElement('div');
+            sessionInfoDiv.className = 'imported-session-info';
+            sessionInfoDiv.innerHTML = `
+                <h3>📄 会话信息</h3>
+                <p><strong>会话ID:</strong> ${sessionInfo.id}</p>
+                <p><strong>摘要:</strong> ${sessionInfo.summary}</p>
+                <p><strong>项目:</strong> ${sessionInfo.projectName?.replace(/-/g, '/') || 'Unknown'}</p>
+                <p><strong>时间:</strong> ${new Date(sessionInfo.timestamp).toLocaleString()}</p>
+                <p><strong>分享时间:</strong> ${new Date(sessionInfo.sharedAt).toLocaleString()}</p>
+                <hr style="margin: 16px 0; border: 1px solid #262626;">
+            `;
+            container.appendChild(sessionInfoDiv);
+        }
+        
+        // Render messages in chat format
+        if (messages.length > 0) {
+            const messagesDiv = document.createElement('div');
+            messagesDiv.className = 'imported-messages';
+            
+            messages.forEach(record => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${record.type}`;
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                
+                if (record.type === 'user') {
+                    avatar.textContent = 'U';
+                } else {
+                    avatar.innerHTML = `<img src="assets/icons/claude-avatar.svg" class="claude-avatar-svg" alt="Claude">`;
+                }
+                
+                const content = document.createElement('div');
+                content.className = 'message-content';
+                
+                if (record.type === 'user') {
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'message-text';
+                    
+                    let messageContent = '';
+                    if (typeof record.message.content === 'string') {
+                        messageContent = record.message.content;
+                    } else if (Array.isArray(record.message.content)) {
+                        messageContent = record.message.content
+                            .filter(item => item.type === 'text')
+                            .map(item => item.text)
+                            .join('\n');
+                    } else if (record.message.content && record.message.content.text) {
+                        messageContent = record.message.content.text;
+                    } else {
+                        messageContent = JSON.stringify(record.message.content);
+                    }
+                    
+                    textDiv.textContent = messageContent;
+                    content.appendChild(textDiv);
+                } else if (record.type === 'assistant') {
+                    const message = record.message;
+                    if (message.content) {
+                        message.content.forEach(item => {
+                            if (item.type === 'text') {
+                                const textDiv = document.createElement('div');
+                                textDiv.className = 'message-text';
+                                textDiv.textContent = item.text;
+                                content.appendChild(textDiv);
+                            } else if (item.type === 'tool_use') {
+                                const toolDiv = document.createElement('div');
+                                toolDiv.className = 'tool-call';
+                                
+                                const toolId = `tool-${Date.now()}-${Math.random()}`;
+                                
+                                toolDiv.innerHTML = `
+                                    <div class="tool-call-header" onclick="toggleToolParams('${toolId}')">
+                                        <div class="tool-call-icon">🔧</div>
+                                        <span>工具调用: ${item.name}</span>
+                                        <div class="tool-toggle">▼</div>
+                                    </div>
+                                    <div class="tool-call-content collapsed" id="${toolId}">
+                                        <div>参数:</div>
+                                        <pre class="tool-call-input">${JSON.stringify(item.input, null, 2)}</pre>
+                                    </div>
+                                `;
+                                content.appendChild(toolDiv);
+                            }
+                        });
+                    }
+                }
+                
+                // Add timestamp
+                if (record.timestamp) {
+                    const timestamp = document.createElement('div');
+                    timestamp.className = 'timestamp';
+                    timestamp.textContent = new Date(record.timestamp).toLocaleString();
+                    content.appendChild(timestamp);
+                }
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(content);
+                messagesDiv.appendChild(messageDiv);
+            });
+            
+            container.appendChild(messagesDiv);
+        }
+    }
+    
+    sessionToJSONL(sessionData) {
+        let jsonlContent = '';
+        
+        // Add session metadata as the first line
+        const metadata = {
+            type: 'session_info',
+            id: sessionData.id,
+            summary: sessionData.summary,
+            timestamp: sessionData.timestamp,
+            projectName: sessionData.projectName,
+            sharedAt: new Date().toISOString(),
+            sharedBy: 'Claude Code Web GUI',
+            version: '1.0.0'
+        };
+        jsonlContent += JSON.stringify(metadata) + '\n';
+        
+        // Add all messages in their original format
+        sessionData.messages.forEach(msg => {
+            jsonlContent += JSON.stringify(msg) + '\n';
+        });
+        
+        return jsonlContent;
     }
     
     sessionToMarkdown(sessionData) {
@@ -1289,13 +1457,24 @@ window.importManualGistContent = () => {
         return;
     }
     
+    // Try to detect if content is JSONL format
+    const isJSONL = content.split('\n').some(line => {
+        try {
+            const parsed = JSON.parse(line.trim());
+            return parsed.type === 'session_info' || parsed.type === 'user' || parsed.type === 'assistant';
+        } catch (e) {
+            return false;
+        }
+    });
+    
     const gistData = {
         id: 'manual-import',
-        title: t('manuallyImported') || '手动导入的内容', 
+        title: isJSONL ? '手动导入的JSONL会话' : '手动导入的内容', 
         content: content,
         url: '#manual-import',
         created: new Date().toISOString(),
-        updated: new Date().toISOString()
+        updated: new Date().toISOString(),
+        isJSONL: isJSONL
     };
     
     // Close the modal
