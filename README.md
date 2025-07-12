@@ -1,4 +1,4 @@
-# <img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="24" style="vertical-align: middle;"> Claude Code Web GUI
+# <img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="32" style="vertical-align: middle;"> Claude Code Web GUI
 
 A simple and practical Claude Code session browser that runs entirely in your browser with no server required.
 
