@@ -100,19 +100,20 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 300px;
-    height: 300px;
+    width: 350px;
+    height: 350px;
     transform: translate(-50%, -50%);
     background: 
         radial-gradient(
             circle at center,
-            rgba(255, 255, 255, 0.08) 0%,
-            rgba(255, 255, 255, 0.04) 30%,
-            rgba(255, 255, 255, 0.02) 50%,
-            transparent 70%
+            rgba(102, 126, 234, 0.15) 0%,
+            rgba(147, 197, 253, 0.12) 20%,
+            rgba(255, 255, 255, 0.08) 40%,
+            rgba(255, 255, 255, 0.04) 60%,
+            transparent 80%
         );
     border-radius: 50%;
-    animation: breathingRing 8s ease-in-out infinite;
+    animation: breathingRing 6s ease-in-out infinite;
     pointer-events: none;
 }
 
@@ -121,31 +122,40 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 500px;
-    height: 500px;
+    width: 600px;
+    height: 600px;
     transform: translate(-50%, -50%);
     background: 
         radial-gradient(
             circle at center,
             transparent 0%,
-            rgba(255, 255, 255, 0.03) 40%,
-            rgba(255, 255, 255, 0.06) 50%,
-            rgba(255, 255, 255, 0.03) 60%,
-            transparent 80%
+            rgba(139, 92, 246, 0.08) 30%,
+            rgba(167, 139, 250, 0.12) 45%,
+            rgba(196, 181, 253, 0.08) 55%,
+            rgba(255, 255, 255, 0.05) 70%,
+            transparent 85%
         );
     border-radius: 50%;
-    animation: breathingRing 12s ease-in-out infinite reverse;
+    animation: breathingRing 10s ease-in-out infinite reverse;
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 0.8;
 }
 
 @keyframes breathingRing {
     0%, 100% {
-        transform: translate(-50%, -50%) scale(0.8);
-        opacity: 0.4;
+        transform: translate(-50%, -50%) scale(0.7);
+        opacity: 0.3;
+    }
+    25% {
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0.6;
     }
     50% {
-        transform: translate(-50%, -50%) scale(1.2);
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 1.0;
+    }
+    75% {
+        transform: translate(-50%, -50%) scale(1.1);
         opacity: 0.8;
     }
 }
