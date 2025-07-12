@@ -132,6 +132,8 @@ const LANGUAGES = {
         pasteGistUrl: 'Paste created Gist URL...',
         copyImportLink: 'Copy Import Link',
         importLinkCopied: 'Import link copied to clipboard! Users can click this link to directly import the Gist session',
+        publicGistReminder: 'Important Reminder',
+        publicGistReminderText: 'Only public Gists can be accessed and viewed by others through sharing links. If you create a private Gist, others will not be able to see the session content.',
         errors: {
             unsupported: 'Your browser does not support the File System Access API. Please use the latest version of Chrome or Edge.',
             accessFailed: 'Failed to access directory',
@@ -284,6 +286,8 @@ const LANGUAGES = {
         shareToX: '分享到X',
         copyImportLink: '复制导入链接',
         importLinkCopied: '导入链接已复制到剪贴板！用户点击该链接即可直接导入Gist会话',
+        publicGistReminder: '重要提醒',
+        publicGistReminderText: '只有公开的Gist才能被他人通过分享链接直接访问和查看。如果创建私有Gist，其他人将无法看到会话内容。',
         errors: {
             unsupported: '您的浏览器不支持文件系统访问 API。请使用最新版本的 Chrome 或 Edge 浏览器。',
             accessFailed: '访问目录失败',

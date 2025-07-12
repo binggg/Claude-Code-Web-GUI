@@ -973,8 +973,8 @@ ${t('vscodeOptions') || '打开方式'}:
                             <li>${t('gistStep5') || '复制创建的Gist URL'}</li>
                         </ol>
                         <div class="share-public-reminder" style="background: #0f1f13; border: 1px solid #2a7a2a; border-radius: 4px; padding: 12px; margin: 12px 0;">
-                            <strong style="color: #74d474;">🔑 重要提醒：</strong>
-                            <p style="color: #74d474; font-size: 11px; margin: 8px 0 0 0;">只有公开的Gist才能被他人通过分享链接直接访问和查看。如果创建私有Gist，其他人将无法看到会话内容。</p>
+                            <strong style="color: #74d474;">🔑 ${t('publicGistReminder') || '重要提醒'}：</strong>
+                            <p style="color: #74d474; font-size: 11px; margin: 8px 0 0 0;">${t('publicGistReminderText') || '只有公开的Gist才能被他人通过分享链接直接访问和查看。如果创建私有Gist，其他人将无法看到会话内容。'}</p>
                         </div>
                         <div class="gist-url-section">
                             <h4>🔗 ${t('shareGistUrl') || '分享Gist URL'}</h4>
