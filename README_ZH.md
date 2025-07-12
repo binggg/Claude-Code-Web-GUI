@@ -16,12 +16,12 @@
 ## 快速开始
 
 ### 在线使用（推荐）
-访问：https://binggg.github.io/claude-code-web-gui/
+访问：https://binggg.github.io/Claude-Code-Web-GUI/
 
 ### 本地运行
 ```bash
-git clone https://github.com/binggg/claude-code-web-gui.git
-cd claude-code-web-gui
+git clone https://github.com/binggg/Claude-Code-Web-GUI.git
+cd Claude-Code-Web-GUI
 python -m http.server 8000
 # 浏览器打开 http://localhost:8000
 ```

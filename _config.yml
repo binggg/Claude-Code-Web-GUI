@@ -1,0 +1,43 @@
+name: Claude Code Web GUI
+description: A simple and practical Claude Code session browser that runs entirely in your browser
+url: https://binggg.github.io/Claude-Code-Web-GUI
+baseurl: /Claude-Code-Web-GUI
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# Exclude from processing
+exclude:
+  - server/
+  - doc/
+  - .gitignore
+  - README_ZH.md
+  - todo.md
+  - claude-color.svg
+  - assets/js/temp_methods.txt
+
+# Include specific files
+include:
+  - _config.yml
+
+# Plugin settings
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# SEO settings
+title: Claude Code Web GUI
+author: binggg
+lang: en
+locale: en_US
+
+# Social media and repository
+github_username: binggg
+repository: binggg/Claude-Code-Web-GUI
+
+# GitHub Pages specific
+github:
+  repository_name: Claude-Code-Web-GUI
+  repository_url: https://github.com/binggg/Claude-Code-Web-GUI

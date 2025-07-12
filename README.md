@@ -16,12 +16,12 @@ English | [中文](README_ZH.md)
 ## Quick Start
 
 ### Online Usage (Recommended)
-Visit: https://binggg.github.io/claude-code-web-gui/
+Visit: https://binggg.github.io/Claude-Code-Web-GUI/
 
 ### Local Development
 ```bash
-git clone https://github.com/binggg/claude-code-web-gui.git
-cd claude-code-web-gui
+git clone https://github.com/binggg/Claude-Code-Web-GUI.git
+cd Claude-Code-Web-GUI
 python -m http.server 8000
 # Open http://localhost:8000 in browser
 ```
