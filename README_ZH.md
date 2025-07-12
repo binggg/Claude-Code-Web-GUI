@@ -1,4 +1,4 @@
-# <div align="center"><img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="48"></div>
+# <div align="center"><img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="150"></div>
 
 <div align="center">
 
@@ -15,6 +15,8 @@
 一个简洁实用的 Claude Code 会话浏览器，完全在浏览器中运行，无需服务器。
 
 [English](README.md) | 中文
+
+https://github.com/user-attachments/assets/039dc640-d5fc-4c29-9bb8-a386bd1a9da8
 
 > [!TIP]
 > ⭐ 给个Star支持一下 — 为仓库点星
