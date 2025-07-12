@@ -1,0 +1,31 @@
+{
+  "name": "claude-code-gui-server",
+  "version": "2.0.0",
+  "description": "Local Bun server for Claude Code GUI with continue conversation functionality",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "bun run server.js",
+    "dev": "bun run --watch server.js",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "hono": "^3.12.0",
+    "@hono/node-server": "^1.8.0"
+  },
+  "devDependencies": {
+    "bun-types": "^1.0.0"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "keywords": [
+    "claude-code",
+    "gui",
+    "server",
+    "bun",
+    "conversation"
+  ],
+  "author": "Claude Code GUI",
+  "license": "MIT"
+}
