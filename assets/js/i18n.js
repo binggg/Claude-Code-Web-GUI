@@ -449,6 +449,12 @@ function updateUI() {
         instructionsTitle.textContent = t('features.title');
     }
     if (instructionsList) {
+        // Remove any existing instructions section to prevent duplicates
+        const existingInstructionsSection = instructionsList.parentElement.querySelector('.dynamic-instructions');
+        if (existingInstructionsSection) {
+            existingInstructionsSection.remove();
+        }
+        
         // Combine features and instructions
         const featuresHtml = t('features.list')
             .map(feature => `<li>${feature}</li>`)
@@ -460,6 +466,7 @@ function updateUI() {
         
         // Add instructions title after the features list
         const instructionsSection = document.createElement('div');
+        instructionsSection.className = 'dynamic-instructions';
         instructionsSection.innerHTML = `
             <h4 style="margin-top: 20px; margin-bottom: 10px; color: #e5e5e5;">${t('instructions.title')}</h4>
             <ol style="margin: 0; padding-left: 20px;">${instructionsHtml}</ol>
