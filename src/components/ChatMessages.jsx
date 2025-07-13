@@ -72,7 +72,7 @@ const ChatMessages = ({ session, t, view }) => {
           💡 <strong>Tip:</strong> 你也可以使用 Claude Code Web GUI 浏览和分享自己的会话
         </p>
         <a 
-          href="/" 
+          href="." 
           style={{
             color: '#667eea',
             textDecoration: 'none',
