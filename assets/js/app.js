@@ -8,6 +8,10 @@ class ClaudeCodeGUI {
         this.currentSession = null;
         this.filteredSessions = [];
         
+        // Initialize new modular components
+        this.gistManager = new GistManager();
+        this.chatRenderer = new ChatRenderer();
+        
         this.init();
     }
     
@@ -261,73 +265,16 @@ class ClaudeCodeGUI {
         `;
         document.querySelector('.main-header').appendChild(sharedIndicator);
         
-        // Display messages
-        this.renderSharedChat(sessionData);
+        // Display messages using ChatRenderer
+        this.chatRenderer.renderSharedChat(sessionData);
         
         // Hide FAB buttons for shared sessions
         this.hideFabButton();
     }
     
     renderSharedChat(sessionData) {
-        const container = document.getElementById('chat-messages');
-        container.innerHTML = '';
-        
-        // Add session info header
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'shared-session-info';
-        infoDiv.innerHTML = `
-            <h2>📤 ${sessionData.title}</h2>
-            <p><strong>${t('time') || '时间'}:</strong> ${new Date(sessionData.time).toLocaleString()}</p>
-            <p><strong>${t('sessionId') || '会话ID'}:</strong> ${sessionData.id}</p>
-            <hr style="margin: 20px 0; border: 1px solid #262626;">
-        `;
-        container.appendChild(infoDiv);
-        
-        // Display messages (handle simplified format for shared sessions)
-        if (sessionData.msgs && sessionData.msgs.length > 0) {
-            sessionData.msgs.forEach((msg, index) => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${msg.type}`;
-                
-                const avatar = document.createElement('div');
-                avatar.className = 'message-avatar';
-                
-                if (msg.type === 'user') {
-                    avatar.textContent = 'U';
-                } else {
-                    avatar.innerHTML = `<img src="assets/icons/claude-avatar.svg" class="claude-avatar-svg" alt="Claude">`;
-                }
-                
-                const content = document.createElement('div');
-                content.className = 'message-content';
-                
-                const textDiv = document.createElement('div');
-                textDiv.className = 'message-text';
-                
-                // Handle simplified message format in shared sessions
-                textDiv.textContent = msg.content || '';
-                content.appendChild(textDiv);
-                
-                messageDiv.appendChild(avatar);
-                messageDiv.appendChild(content);
-                container.appendChild(messageDiv);
-            });
-        } else {
-            // Show message if no messages found
-            const noMsgDiv = document.createElement('div');
-            noMsgDiv.style.cssText = 'text-align: center; color: #71717a; margin: 40px 0;';
-            noMsgDiv.textContent = t('noMessagesInShare') || '分享的会话中没有消息内容';
-            container.appendChild(noMsgDiv);
-        }
-        
-        // Add footer
-        const footerDiv = document.createElement('div');
-        footerDiv.className = 'shared-session-footer';
-        footerDiv.innerHTML = `
-            <p><em>${t('sharedNote') || '这是一个分享的Claude Code会话片段'}</em></p>
-            <p><a href="${window.location.origin}${window.location.pathname}" style="color: #667eea;">${t('viewApp') || '访问完整应用'}</a></p>
-        `;
-        container.appendChild(footerDiv);
+        // Use ChatRenderer for consistent rendering
+        this.chatRenderer.renderSharedChat(sessionData);
     }
     
     setupTwitterSharing(sessionData) {
@@ -719,7 +666,8 @@ ${t('confirmDialog.continue')}`
                 }
             }
             
-            this.renderChat(messages);
+            // Use ChatRenderer for consistent rendering
+            this.chatRenderer.renderChat(messages);
             
         } catch (error) {
             this.showError(`${t('errors.sessionLoadFailed')}: ${error.message}`);
@@ -729,95 +677,11 @@ ${t('confirmDialog.continue')}`
     }
 
     renderChat(messages) {
-        const container = document.getElementById('chat-messages');
-        container.innerHTML = '';
-        
-        messages.forEach(record => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${record.type}`;
-            
-            const avatar = document.createElement('div');
-            avatar.className = 'message-avatar';
-            
-            if (record.type === 'user') {
-                avatar.textContent = 'U';
-            } else {
-                // Claude logo for assistant
-                avatar.innerHTML = `<img src="assets/icons/claude-avatar.svg" class="claude-avatar-svg" alt="Claude">`;
-            }
-            
-            const content = document.createElement('div');
-            content.className = 'message-content';
-            
-            if (record.type === 'user') {
-                const textDiv = document.createElement('div');
-                textDiv.className = 'message-text';
-                
-                // Fix [object Object] issue
-                let messageContent = '';
-                if (typeof record.message.content === 'string') {
-                    messageContent = record.message.content;
-                } else if (Array.isArray(record.message.content)) {
-                    // If array, extract text content
-                    messageContent = record.message.content
-                        .filter(item => item.type === 'text')
-                        .map(item => item.text)
-                        .join('\n');
-                } else if (record.message.content && record.message.content.text) {
-                    messageContent = record.message.content.text;
-                } else {
-                    messageContent = JSON.stringify(record.message.content);
-                }
-                
-                textDiv.textContent = messageContent;
-                content.appendChild(textDiv);
-            } else if (record.type === 'assistant') {
-                // Handle assistant messages
-                const message = record.message;
-                if (message.content) {
-                    message.content.forEach(item => {
-                        if (item.type === 'text') {
-                            const textDiv = document.createElement('div');
-                            textDiv.className = 'message-text';
-                            textDiv.textContent = item.text;
-                            content.appendChild(textDiv);
-                        } else if (item.type === 'tool_use') {
-                            const toolDiv = document.createElement('div');
-                            toolDiv.className = 'tool-call';
-                            
-                            const toolId = `tool-${Date.now()}-${Math.random()}`;
-                            
-                            toolDiv.innerHTML = `
-                                <div class="tool-call-header" onclick="toggleToolParams('${toolId}')">
-                                    <div class="tool-call-icon">🔧</div>
-                                    <span>${t('toolUse')}: ${item.name}</span>
-                                    <div class="tool-toggle">▼</div>
-                                </div>
-                                <div class="tool-call-content collapsed" id="${toolId}">
-                                    <div>${t('toolParams')}:</div>
-                                    <pre class="tool-call-input">${JSON.stringify(item.input, null, 2)}</pre>
-                                </div>
-                            `;
-                            content.appendChild(toolDiv);
-                        }
-                    });
-                }
-            }
-            
-            // Add timestamp
-            if (record.timestamp) {
-                const timestamp = document.createElement('div');
-                timestamp.className = 'timestamp';
-                timestamp.textContent = new Date(record.timestamp).toLocaleString();
-                content.appendChild(timestamp);
-            }
-            
-            messageDiv.appendChild(avatar);
-            messageDiv.appendChild(content);
-            container.appendChild(messageDiv);
-        });
+        // Use ChatRenderer for consistent rendering with enhanced markdown support
+        this.chatRenderer.renderChat(messages);
         
         // Add disabled input box at the bottom
+        const container = document.getElementById('chat-messages');
         const inputContainer = document.createElement('div');
         inputContainer.className = 'chat-input-container';
         inputContainer.innerHTML = `
@@ -831,9 +695,6 @@ ${t('confirmDialog.continue')}`
             </button>
         `;
         container.appendChild(inputContainer);
-        
-        // Scroll to bottom
-        container.scrollTop = container.scrollHeight;
     }
 
     getProjectDisplayName(path) {
@@ -1545,7 +1406,9 @@ ${t('vscodeOptions') || '打开方式'}:
                 if (record.type === 'session_info') {
                     sessionInfo = record;
                 } else if (record.type === 'user' || record.type === 'assistant') {
-                    messages.push(record);
+                    // Convert optimized format back to standard format for rendering
+                    const standardMessage = this.convertOptimizedMessage(record);
+                    messages.push(standardMessage);
                 }
             } catch (e) {
                 console.warn('Failed to parse JSONL line:', line);
@@ -1556,6 +1419,7 @@ ${t('vscodeOptions') || '打开方式'}:
         if (sessionInfo) {
             const sessionInfoDiv = document.createElement('div');
             sessionInfoDiv.className = 'imported-session-info';
+            const version = sessionInfo.v || sessionInfo.version || '1.0';
             sessionInfoDiv.innerHTML = `
                 <h3>📄 ${t('sessionInfo') || '会话信息'}</h3>
                 <p><strong>${t('sessionIdLabel') || '会话ID:'}:</strong> ${sessionInfo.id}</p>
@@ -1563,98 +1427,20 @@ ${t('vscodeOptions') || '打开方式'}:
                 <p><strong>${t('projectLabel') || '项目:'}:</strong> ${sessionInfo.projectName?.replace(/-/g, '/') || 'Unknown'}</p>
                 <p><strong>${t('timeLabel') || '时间:'}:</strong> ${new Date(sessionInfo.timestamp).toLocaleString()}</p>
                 <p><strong>${t('sharedTimeLabel') || '分享时间:'}:</strong> ${new Date(sessionInfo.sharedAt).toLocaleString()}</p>
+                ${version === '1.1' ? '<p><em>✨ 优化版本 - 内容已压缩以支持更多消息</em></p>' : ''}
                 <hr style="margin: 16px 0; border: 1px solid #262626;">
             `;
             container.appendChild(sessionInfoDiv);
         }
         
-        // Render messages in chat format
+        // Render messages using ChatRenderer for consistent formatting
         if (messages.length > 0) {
             const messagesDiv = document.createElement('div');
             messagesDiv.className = 'imported-messages';
-            
-            messages.forEach(record => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${record.type}`;
-                
-                const avatar = document.createElement('div');
-                avatar.className = 'message-avatar';
-                
-                if (record.type === 'user') {
-                    avatar.textContent = 'U';
-                } else {
-                    avatar.innerHTML = `<img src="assets/icons/claude-avatar.svg" class="claude-avatar-svg" alt="Claude">`;
-                }
-                
-                const content = document.createElement('div');
-                content.className = 'message-content';
-                
-                if (record.type === 'user') {
-                    const textDiv = document.createElement('div');
-                    textDiv.className = 'message-text';
-                    
-                    let messageContent = '';
-                    if (typeof record.message.content === 'string') {
-                        messageContent = record.message.content;
-                    } else if (Array.isArray(record.message.content)) {
-                        messageContent = record.message.content
-                            .filter(item => item.type === 'text')
-                            .map(item => item.text)
-                            .join('\n');
-                    } else if (record.message.content && record.message.content.text) {
-                        messageContent = record.message.content.text;
-                    } else {
-                        messageContent = JSON.stringify(record.message.content);
-                    }
-                    
-                    textDiv.textContent = messageContent;
-                    content.appendChild(textDiv);
-                } else if (record.type === 'assistant') {
-                    const message = record.message;
-                    if (message.content) {
-                        message.content.forEach(item => {
-                            if (item.type === 'text') {
-                                const textDiv = document.createElement('div');
-                                textDiv.className = 'message-text';
-                                textDiv.textContent = item.text;
-                                content.appendChild(textDiv);
-                            } else if (item.type === 'tool_use') {
-                                const toolDiv = document.createElement('div');
-                                toolDiv.className = 'tool-call';
-                                
-                                const toolId = `tool-${Date.now()}-${Math.random()}`;
-                                
-                                toolDiv.innerHTML = `
-                                    <div class="tool-call-header" onclick="toggleToolParams('${toolId}')">
-                                        <div class="tool-call-icon">🔧</div>
-                                        <span>${t('toolCall') || '工具调用'}: ${item.name}</span>
-                                        <div class="tool-toggle">▼</div>
-                                    </div>
-                                    <div class="tool-call-content collapsed" id="${toolId}">
-                                        <div>${t('parametersLabel') || '参数:'}:</div>
-                                        <pre class="tool-call-input">${JSON.stringify(item.input, null, 2)}</pre>
-                                    </div>
-                                `;
-                                content.appendChild(toolDiv);
-                            }
-                        });
-                    }
-                }
-                
-                // Add timestamp
-                if (record.timestamp) {
-                    const timestamp = document.createElement('div');
-                    timestamp.className = 'timestamp';
-                    timestamp.textContent = new Date(record.timestamp).toLocaleString();
-                    content.appendChild(timestamp);
-                }
-                
-                messageDiv.appendChild(avatar);
-                messageDiv.appendChild(content);
-                messagesDiv.appendChild(messageDiv);
-            });
-            
             container.appendChild(messagesDiv);
+            
+            // Use ChatRenderer for consistent message rendering
+            this.chatRenderer.renderChat(messages, messagesDiv);
         }
     }
     
@@ -1703,7 +1489,7 @@ ${t('vscodeOptions') || '打开方式'}:
     sessionToJSONL(sessionData) {
         let jsonlContent = '';
         
-        // Add session metadata as the first line
+        // Add session metadata as the first line (optimized)
         const metadata = {
             type: 'session_info',
             id: sessionData.id,
@@ -1711,10 +1497,12 @@ ${t('vscodeOptions') || '打开方式'}:
             timestamp: sessionData.timestamp,
             projectName: sessionData.projectName,
             sharedAt: new Date().toISOString(),
-            sharedBy: 'Claude Code Web GUI',
-            version: '1.0.0'
+            v: '1.1' // Shorter version field
         };
         jsonlContent += JSON.stringify(metadata) + '\n';
+        
+        // Optimize messages to save space
+        const optimizedMessages = this.optimizeMessagesForSharing(sessionData.messages);
         
         // Gist has a size limit, so we need to be careful about content size
         const MAX_GIST_SIZE = 900000; // ~900KB limit for safety (GitHub limit is 1MB)
@@ -1722,12 +1510,12 @@ ${t('vscodeOptions') || '打开方式'}:
         let includedMessages = 0;
         
         // Add messages in order, but stop if we approach size limit
-        for (const msg of sessionData.messages) {
+        for (const msg of optimizedMessages) {
             const msgLine = JSON.stringify(msg) + '\n';
             
             // Check if adding this message would exceed the limit
             if (currentSize + msgLine.length > MAX_GIST_SIZE) {
-                console.warn(`Gist size limit approaching. Included ${includedMessages} of ${sessionData.messages.length} messages.`);
+                console.warn(`Gist size limit approaching. Included ${includedMessages} of ${optimizedMessages.length} messages.`);
                 break;
             }
             
@@ -1737,19 +1525,174 @@ ${t('vscodeOptions') || '打开方式'}:
         }
         
         // Add truncation notice if messages were excluded
-        if (includedMessages < sessionData.messages.length) {
+        if (includedMessages < optimizedMessages.length) {
             const truncationNotice = {
                 type: 'truncation_info',
-                message: `Note: This Gist contains ${includedMessages} of ${sessionData.messages.length} messages due to size limitations.`,
-                totalMessages: sessionData.messages.length,
-                includedMessages: includedMessages,
-                truncatedAt: new Date().toISOString()
+                msg: `Contains ${includedMessages} of ${sessionData.messages.length} messages due to size limits.`,
+                total: sessionData.messages.length,
+                included: includedMessages
             };
             jsonlContent += JSON.stringify(truncationNotice) + '\n';
         }
         
-        console.log(`Gist content prepared: ${jsonlContent.length} bytes, ${includedMessages}/${sessionData.messages.length} messages`);
+        console.log(`Optimized Gist content: ${jsonlContent.length} bytes, ${includedMessages}/${sessionData.messages.length} messages (saved ~${this.calculateSpaceSaved(sessionData.messages, optimizedMessages)}%)`);
         return jsonlContent;
+    }
+    
+    optimizeMessagesForSharing(messages) {
+        const optimized = [];
+        const seenContent = new Set();
+        
+        for (const msg of messages) {
+            // Skip duplicate messages
+            const contentKey = this.getMessageContentKey(msg);
+            if (seenContent.has(contentKey)) {
+                continue;
+            }
+            seenContent.add(contentKey);
+            
+            // Create optimized message
+            const optimizedMsg = this.optimizeMessage(msg);
+            
+            // Skip if message has no meaningful content
+            if (this.isMessageMeaningful(optimizedMsg)) {
+                optimized.push(optimizedMsg);
+            }
+        }
+        
+        return optimized;
+    }
+    
+    getMessageContentKey(msg) {
+        if (msg.type === 'user') {
+            if (typeof msg.message?.content === 'string') {
+                return `user:${msg.message.content.slice(0, 100)}`;
+            } else if (Array.isArray(msg.message?.content)) {
+                const textContent = msg.message.content
+                    .filter(item => item.type === 'text')
+                    .map(item => item.text)
+                    .join(' ');
+                return `user:${textContent.slice(0, 100)}`;
+            }
+        } else if (msg.type === 'assistant' && msg.message?.content) {
+            const textContent = msg.message.content
+                .filter(item => item.type === 'text')
+                .map(item => item.text)
+                .join(' ');
+            return `assistant:${textContent.slice(0, 100)}`;
+        }
+        return `${msg.type}:${Math.random()}`;
+    }
+    
+    optimizeMessage(msg) {
+        const optimized = {
+            type: msg.type,
+            ts: msg.timestamp // Shorter field name
+        };
+        
+        if (msg.type === 'user') {
+            optimized.msg = this.optimizeUserContent(msg.message);
+        } else if (msg.type === 'assistant') {
+            optimized.msg = this.optimizeAssistantContent(msg.message);
+        }
+        
+        return optimized;
+    }
+    
+    optimizeUserContent(message) {
+        if (typeof message?.content === 'string') {
+            return { content: message.content };
+        } else if (Array.isArray(message?.content)) {
+            const optimizedContent = message.content
+                .map(item => {
+                    if (item.type === 'text') {
+                        return { type: 'text', text: item.text };
+                    } else if (item.type === 'image') {
+                        // Keep image info but remove large data
+                        return { type: 'image', summary: '[Image attached]' };
+                    }
+                    return null;
+                })
+                .filter(Boolean);
+            return { content: optimizedContent };
+        }
+        return { content: '[No content]' };
+    }
+    
+    optimizeAssistantContent(message) {
+        if (!message?.content) return { content: '[No content]' };
+        
+        const optimizedContent = message.content
+            .map(item => {
+                if (item.type === 'text') {
+                    return { type: 'text', text: item.text };
+                } else if (item.type === 'tool_use') {
+                    // Keep tool calls but minimize input data
+                    return {
+                        type: 'tool_use',
+                        name: item.name,
+                        input: this.minimizeToolInput(item.input)
+                    };
+                }
+                return null;
+            })
+            .filter(Boolean);
+            
+        return { content: optimizedContent };
+    }
+    
+    minimizeToolInput(input) {
+        if (!input) return input;
+        
+        const minimized = {};
+        for (const [key, value] of Object.entries(input)) {
+            if (typeof value === 'string' && value.length > 500) {
+                // Truncate long strings but keep important parts
+                minimized[key] = value.slice(0, 250) + '...[truncated]...' + value.slice(-100);
+            } else if (Array.isArray(value) && value.length > 10) {
+                // Limit array size
+                minimized[key] = [...value.slice(0, 5), '...[truncated]...', ...value.slice(-2)];
+            } else {
+                minimized[key] = value;
+            }
+        }
+        return minimized;
+    }
+    
+    isMessageMeaningful(msg) {
+        if (!msg.msg) return false;
+        
+        if (msg.type === 'user') {
+            const content = typeof msg.msg.content === 'string' 
+                ? msg.msg.content 
+                : JSON.stringify(msg.msg.content);
+            return content && content.trim().length > 3;
+        } else if (msg.type === 'assistant') {
+            return msg.msg.content && msg.msg.content.length > 0;
+        }
+        
+        return false;
+    }
+    
+    calculateSpaceSaved(original, optimized) {
+        const originalSize = JSON.stringify(original).length;
+        const optimizedSize = JSON.stringify(optimized).length;
+        return Math.round(((originalSize - optimizedSize) / originalSize) * 100);
+    }
+    
+    convertOptimizedMessage(optimizedMsg) {
+        // Convert optimized message format back to standard format for rendering
+        if (optimizedMsg.msg) {
+            // New optimized format
+            return {
+                type: optimizedMsg.type,
+                timestamp: optimizedMsg.ts || optimizedMsg.timestamp,
+                message: optimizedMsg.msg
+            };
+        } else {
+            // Old format, return as is
+            return optimizedMsg;
+        }
     }
     
     sessionToMarkdown(sessionData) {
