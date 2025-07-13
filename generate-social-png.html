@@ -343,109 +343,136 @@
                 const canvas = document.getElementById('socialCard');
                 const ctx = canvas.getContext('2d');
             
-            // Cool black background with texture and depth
-            const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
-            gradient.addColorStop(0, '#0a0a0a');
-            gradient.addColorStop(0.3, '#1a1a1a');
-            gradient.addColorStop(0.7, '#2a2a2a');
-            gradient.addColorStop(1, '#0f0f0f');
-            ctx.fillStyle = gradient;
+            // Vercel-inspired artistic background
+            // Deep black base
+            ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, 1200, 630);
             
-            // Add carbon fiber texture pattern
-            ctx.globalAlpha = 0.08;
-            for(let i = 0; i < 1200; i += 8) {
-                for(let j = 0; j < 630; j += 8) {
-                    if ((i + j) % 16 === 0) {
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(i, j, 2, 2);
-                        ctx.fillRect(i + 4, j + 4, 2, 2);
-                    }
+            // Geometric gradient shapes (Vercel style)
+            const centerX = 600;
+            const centerY = 315;
+            
+            // Create artistic gradient mesh
+            const gradient1 = ctx.createRadialGradient(200, 100, 0, 200, 100, 400);
+            gradient1.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+            gradient1.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient1;
+            ctx.fillRect(0, 0, 1200, 630);
+            
+            const gradient2 = ctx.createRadialGradient(1000, 500, 0, 1000, 500, 350);
+            gradient2.addColorStop(0, 'rgba(217, 119, 87, 0.1)');
+            gradient2.addColorStop(1, 'rgba(217, 119, 87, 0)');
+            ctx.fillStyle = gradient2;
+            ctx.fillRect(0, 0, 1200, 630);
+            
+            // Artistic geometric lines (Vercel's signature style)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.lineWidth = 1;
+            
+            // Diagonal grid pattern
+            for(let i = -200; i < 1400; i += 40) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i + 200, 630);
+                ctx.stroke();
+            }
+            
+            // Subtle dot pattern overlay
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            for(let x = 0; x < 1200; x += 30) {
+                for(let y = 0; y < 630; y += 30) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, 0.5, 0, Math.PI * 2);
+                    ctx.fill();
                 }
             }
             
-            // Add subtle noise texture
-            for(let i = 0; i < 2000; i++) {
-                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.03})`;
-                ctx.fillRect(Math.random() * 1200, Math.random() * 630, 1, 1);
-            }
-            ctx.globalAlpha = 1;
+            // Vercel-style minimal logo design
+            // Modern geometric container
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.fillRect(540, 120, 120, 120);
             
-            // Claude Code style logo with orange theme
-            // Outer glow effect
-            ctx.fillStyle = 'rgba(217, 119, 87, 0.3)';
-            ctx.beginPath();
-            ctx.roundRect(535, 115, 130, 130, 20);
-            ctx.fill();
+            // Subtle border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(540, 120, 120, 120);
             
-            // Inner shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-            ctx.beginPath();
-            ctx.roundRect(542, 122, 116, 116, 18);
-            ctx.fill();
+            // Claude Code orange accent (minimal)
+            ctx.fillStyle = '#D97757';
+            ctx.fillRect(540, 120, 120, 4); // Top accent line
             
-            // Main logo background - Claude Code orange
+            // Inner glow effect
+            const logoGlow = ctx.createRadialGradient(600, 180, 0, 600, 180, 60);
+            logoGlow.addColorStop(0, 'rgba(217, 119, 87, 0.2)');
+            logoGlow.addColorStop(1, 'rgba(217, 119, 87, 0)');
+            ctx.fillStyle = logoGlow;
+            ctx.fillRect(540, 120, 120, 120);
+            
+            // Modern minimalist 'C' logo
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 64px system-ui, -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('C', 600, 195);
+            
+            // Subtle orange accent dot
             ctx.fillStyle = '#D97757';
             ctx.beginPath();
-            ctx.roundRect(540, 120, 120, 120, 20);
+            ctx.arc(620, 160, 3, 0, Math.PI * 2);
             ctx.fill();
             
-            // Subtle inner highlight
-            const logoHighlight = ctx.createLinearGradient(540, 120, 660, 180);
-            logoHighlight.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
-            logoHighlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = logoHighlight;
-            ctx.beginPath();
-            ctx.roundRect(540, 120, 120, 60, 20);
-            ctx.fill();
-            
-            // Logo text - 'C' for Claude Code
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 72px Arial';
-            ctx.textAlign = 'center';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-            ctx.shadowBlur = 4;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
-            ctx.fillText('C', 600, 200);
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            
+            // Vercel-style typography with artistic spacing
             const lang = languages[currentLanguage];
             
-            // Title with elegant styling - multilingual
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.font = 'bold 42px Arial';
-            ctx.fillText(lang.title, 602, 292);
-            
+            // Main title - clean and modern
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 42px Arial';
-            ctx.fillText(lang.title, 600, 290);
+            ctx.font = '700 40px system-ui, -apple-system, sans-serif';
+            ctx.letterSpacing = '-0.02em';
+            ctx.textAlign = 'center';
+            ctx.fillText(lang.title, 600, 295);
             
-            // Subtitle with elegant styling
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.font = '24px Arial';
-            ctx.fillText(lang.subtitle, 600, 325);
+            // Subtle subtitle
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.font = '400 18px system-ui, -apple-system, sans-serif';
+            ctx.letterSpacing = '0.01em';
+            ctx.fillText(lang.subtitle, 600, 330);
             
-            // Benefits with professional icons - multilingual
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.font = '16px Arial';
-            ctx.fillText(lang.benefits[0], 600, 375);
-            ctx.fillText(lang.benefits[1], 600, 400);
-            ctx.fillText(lang.benefits[2], 600, 425);
+            // Elegant feature list with artistic elements
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.font = '400 14px system-ui, -apple-system, sans-serif';
+            ctx.letterSpacing = '0.02em';
             
-            // Call to action with enhanced styling
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.fillRect(200, 465, 800, 60);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(200, 465, 800, 60);
+            // Add subtle orange accents for each point
+            const yPositions = [375, 395, 415];
+            lang.benefits.forEach((benefit, index) => {
+                const y = yPositions[index];
+                
+                // Orange accent dot
+                ctx.fillStyle = '#D97757';
+                ctx.beginPath();
+                ctx.arc(300, y - 5, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Benefit text
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.textAlign = 'left';
+                ctx.fillText(benefit.replace('• ', ''), 320, y);
+            });
             
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center'; // Reset alignment
+            
+            // Minimalist call-to-action (Vercel style)
+            // Subtle background highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+            ctx.fillRect(150, 470, 900, 50);
+            
+            // Top border accent
+            ctx.fillStyle = 'rgba(217, 119, 87, 0.3)';
+            ctx.fillRect(150, 470, 900, 1);
+            
+            // Clean, minimal text
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.font = '400 16px system-ui, -apple-system, sans-serif';
+            ctx.letterSpacing = '0.02em';
             ctx.fillText(lang.url, 600, 500);
             
             // Download the image
