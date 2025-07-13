@@ -1167,117 +1167,159 @@ ${t('vscodeOptions') || '打开方式'}:
     }
     
     async fetchGistContent(gistId) {
+        // 策略1: 优先尝试Raw URL访问（无限制）
         try {
-            // Get GitHub API key from localStorage if available
-            const apiKey = localStorage.getItem('github-api-key');
-            const headers = {};
-            if (apiKey) {
-                headers['Authorization'] = `token ${apiKey}`;
-            }
-            
-            // Try GitHub API first
-            const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                headers: headers
-            });
-            
-            if (response.ok) {
-                const gist = await response.json();
-                
-                // Find the session file (now look for JSONL format first, then fall back to markdown)
-                const files = Object.values(gist.files);
-                let sessionFile = files.find(file => 
-                    file.filename.endsWith('.jsonl') || 
-                    file.type === 'text/plain' ||
-                    file.filename.toLowerCase().includes('session') ||
-                    file.filename.toLowerCase().includes('claude')
-                );
-                
-                // If no JSONL file found, look for markdown files for backward compatibility
-                if (!sessionFile) {
-                    sessionFile = files.find(file => 
-                        file.filename.endsWith('.md') || 
-                        file.type === 'text/markdown' ||
-                        file.filename.toLowerCase().includes('conversation')
-                    );
-                }
-                
-                if (!sessionFile) {
-                    throw new Error(t('noSessionFileInGist') || 'Gist中未找到会话文件');
-                }
-                
-                return {
-                    id: gistId,
-                    title: gist.description || sessionFile.filename,
-                    content: sessionFile.content,
-                    url: gist.html_url,
-                    created: gist.created_at,
-                    updated: gist.updated_at,
-                    isJSONL: sessionFile.filename.endsWith('.jsonl') || sessionFile.type === 'text/plain'
-                };
-            } else if (response.status === 403) {
-                // Rate limit exceeded, try fallback method
-                console.warn('GitHub API rate limit exceeded, trying fallback method');
-                // Show user feedback about rate limiting
-                const tempMessage = document.createElement('div');
-                tempMessage.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #18181b; border: 1px solid #27272a; color: #a1a1aa; padding: 8px 12px; border-radius: 6px; font-size: 12px; z-index: 1001;';
-                tempMessage.textContent = t('gistRateLimited') || 'GitHub API频率限制，使用备用方法...';
-                document.body.appendChild(tempMessage);
-                setTimeout(() => tempMessage.remove(), 3000);
-                
-                return await this.fetchGistContentFallback(gistId);
-            } else {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const rawData = await this.fetchGistRaw(gistId);
+            if (rawData) {
+                console.log('Successfully fetched via Raw URL (no rate limit)');
+                return rawData;
             }
         } catch (error) {
-            if (error.message.includes('rate limit') || error.message.includes('403')) {
-                console.warn('GitHub API unavailable, trying fallback method');
-                return await this.fetchGistContentFallback(gistId);
+            console.log('Raw URL failed, trying API method:', error.message);
+        }
+        
+        // 策略2: 降级到GitHub API（如果用户配置了密钥）
+        const apiKey = localStorage.getItem('github-api-key');
+        if (apiKey) {
+            try {
+                return await this.fetchGistViaAPI(gistId, apiKey);
+            } catch (error) {
+                console.log('API with user key failed:', error.message);
+            }
+        }
+        
+        // 策略3: 尝试无认证API调用（60次/小时限制）
+        try {
+            return await this.fetchGistViaAPI(gistId);
+        } catch (error) {
+            console.log('Unauthenticated API failed:', error.message);
+            // 如果是403错误，建议配置API密钥
+            if (error.message.includes('403') || error.message.includes('rate limit')) {
+                throw new Error('GitHub API rate limit exceeded. Please configure your API key in settings for unlimited access.');
             }
             throw error;
         }
     }
     
-    async fetchGistContentFallback(gistId) {
-        // Fallback: Try common raw URLs for session files
-        const commonFilenames = [
-            'session.jsonl',
-            'claude-session.jsonl', 
-            'conversation.jsonl',
-            'chat.jsonl',
-            'session.md',
-            'claude-session.md', 
-            'conversation.md',
-            'chat.md',
-            'README.md',
-            'session-export.md'
+    async fetchGistRaw(gistId) {
+        // 尝试多种Raw URL模式
+        const rawPatterns = [
+            // 模式1: 通用Raw URL（最常见）
+            `https://gist.githubusercontent.com/raw/${gistId}`,
+            // 模式2: 带完整路径的Raw URL
+            `https://gist.github.com/${gistId}/raw`,
         ];
         
-        // Try to fetch content directly from raw URLs
-        for (const filename of commonFilenames) {
+        for (const url of rawPatterns) {
             try {
-                const rawUrl = `https://gist.githubusercontent.com/${gistId}/raw/${filename}`;
-                const response = await fetch(rawUrl);
+                console.log(`Trying raw URL: ${url}`);
+                const response = await fetch(url);
                 
                 if (response.ok) {
                     const content = await response.text();
+                    
+                    // 检查内容是否为空或错误页面
+                    if (!content || content.trim().length === 0) {
+                        continue;
+                    }
+                    
+                    // 检查是否是GitHub的404页面
+                    if (content.includes('<!DOCTYPE html>') && content.includes('GitHub')) {
+                        continue;
+                    }
+                    
                     return {
                         id: gistId,
-                        title: filename,
+                        title: `Gist ${gistId}`, // Raw访问无法获取标题
                         content: content,
                         url: `https://gist.github.com/${gistId}`,
-                        created: new Date().toISOString(),
+                        created: new Date().toISOString(), // Raw访问无法获取创建时间
                         updated: new Date().toISOString(),
-                        isJSONL: filename.endsWith('.jsonl')
+                        isJSONL: this.detectJSONLFormat(content),
+                        source: 'raw' // 标记数据来源
                     };
                 }
             } catch (error) {
-                continue; // Try next filename
+                console.log(`Raw URL ${url} failed:`, error.message);
+                continue;
             }
         }
         
-        // If common filenames don't work, show user instructions
-        throw new Error(t('gistFallbackInstructions') || 
-            '无法自动获取Gist内容。请:\\n1. 打开Gist页面\\n2. 点击"Raw"按钮\\n3. 复制URL中的完整路径\\n4. 或者直接复制文件内容到剪贴板');
+        throw new Error('Unable to fetch Gist content via Raw URLs');
+    }
+    
+    async fetchGistViaAPI(gistId, apiKey = null) {
+        const headers = {};
+        if (apiKey) {
+            headers['Authorization'] = `token ${apiKey}`;
+        }
+        
+        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+            headers: headers
+        });
+        
+        if (response.ok) {
+            const gist = await response.json();
+            
+            // Find the session file (look for JSONL format first, then fall back to markdown)
+            const files = Object.values(gist.files);
+            let sessionFile = files.find(file => 
+                file.filename.endsWith('.jsonl') || 
+                file.type === 'text/plain' ||
+                file.filename.toLowerCase().includes('session') ||
+                file.filename.toLowerCase().includes('claude')
+            );
+            
+            // If no JSONL file found, look for markdown files for backward compatibility
+            if (!sessionFile) {
+                sessionFile = files.find(file => 
+                    file.filename.endsWith('.md') || 
+                    file.type === 'text/markdown' ||
+                    file.filename.toLowerCase().includes('conversation')
+                );
+            }
+            
+            if (!sessionFile) {
+                throw new Error(t('noSessionFileInGist') || 'Gist中未找到会话文件');
+            }
+            
+            return {
+                id: gistId,
+                title: gist.description || sessionFile.filename,
+                content: sessionFile.content,
+                url: gist.html_url,
+                created: gist.created_at,
+                updated: gist.updated_at,
+                isJSONL: sessionFile.filename.endsWith('.jsonl') || sessionFile.type === 'text/plain',
+                source: 'api' // 标记数据来源
+            };
+        } else if (response.status === 403) {
+            throw new Error('GitHub API rate limit exceeded');
+        } else if (response.status === 404) {
+            throw new Error('Gist not found or private');
+        } else {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+    }
+    
+    detectJSONLFormat(content) {
+        // 尝试检测内容是否为JSONL格式
+        const lines = content.trim().split('\n');
+        if (lines.length === 0) return false;
+        
+        // 检查前几行是否为有效JSON
+        let jsonCount = 0;
+        for (let i = 0; i < Math.min(3, lines.length); i++) {
+            try {
+                JSON.parse(lines[i]);
+                jsonCount++;
+            } catch (e) {
+                // 不是JSON行
+            }
+        }
+        
+        // 如果超过一半的行是JSON，认为是JSONL格式
+        return jsonCount > 0 && jsonCount / Math.min(3, lines.length) > 0.5;
     }
     
     showGistImportHelp(gistUrl) {
