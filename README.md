@@ -1,4 +1,4 @@
-# <div align="center"><img src="assets/icons/logo.svg" alt="Claude Code Web GUI" height="48"></div>
+# <div align="center"><img src="assets/icons/logo.png" alt="Claude Code Web GUI" height="100"></div>
 
 <div align="center">
 
