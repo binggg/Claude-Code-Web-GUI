@@ -12,7 +12,7 @@
 
 </div>
 
-A simple and practical Claude Code session browser that runs entirely in your browser with no server required.
+🚀 Browse, view and share your Claude Code sessions - runs entirely in browser, no server required!
 
 English | [中文](README_ZH.md)
 
