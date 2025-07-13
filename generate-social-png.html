@@ -343,137 +343,148 @@
                 const canvas = document.getElementById('socialCard');
                 const ctx = canvas.getContext('2d');
             
-            // Vercel-inspired artistic background
+            // Clean Vercel-inspired artistic background (no lines)
             // Deep black base
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, 1200, 630);
             
-            // Geometric gradient shapes (Vercel style)
-            const centerX = 600;
-            const centerY = 315;
-            
-            // Create artistic gradient mesh
-            const gradient1 = ctx.createRadialGradient(200, 100, 0, 200, 100, 400);
-            gradient1.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+            // Artistic gradient blobs for depth
+            const gradient1 = ctx.createRadialGradient(150, 150, 0, 150, 150, 300);
+            gradient1.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
             gradient1.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.fillStyle = gradient1;
             ctx.fillRect(0, 0, 1200, 630);
             
-            const gradient2 = ctx.createRadialGradient(1000, 500, 0, 1000, 500, 350);
-            gradient2.addColorStop(0, 'rgba(217, 119, 87, 0.1)');
+            const gradient2 = ctx.createRadialGradient(1050, 480, 0, 1050, 480, 250);
+            gradient2.addColorStop(0, 'rgba(217, 119, 87, 0.06)');
             gradient2.addColorStop(1, 'rgba(217, 119, 87, 0)');
             ctx.fillStyle = gradient2;
             ctx.fillRect(0, 0, 1200, 630);
             
-            // Artistic geometric lines (Vercel's signature style)
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-            ctx.lineWidth = 1;
+            // Subtle corner accent
+            const gradient3 = ctx.createRadialGradient(600, 50, 0, 600, 50, 200);
+            gradient3.addColorStop(0, 'rgba(255, 255, 255, 0.03)');
+            gradient3.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient3;
+            ctx.fillRect(0, 0, 1200, 630);
             
-            // Diagonal grid pattern
-            for(let i = -200; i < 1400; i += 40) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i + 200, 630);
-                ctx.stroke();
-            }
-            
-            // Subtle dot pattern overlay
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-            for(let x = 0; x < 1200; x += 30) {
-                for(let y = 0; y < 630; y += 30) {
-                    ctx.beginPath();
-                    ctx.arc(x, y, 0.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-            
-            // Vercel-style minimal logo design
-            // Modern geometric container
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-            ctx.fillRect(540, 120, 120, 120);
-            
-            // Subtle border
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(540, 120, 120, 120);
-            
-            // Claude Code orange accent (minimal)
-            ctx.fillStyle = '#D97757';
-            ctx.fillRect(540, 120, 120, 4); // Top accent line
-            
-            // Inner glow effect
-            const logoGlow = ctx.createRadialGradient(600, 180, 0, 600, 180, 60);
-            logoGlow.addColorStop(0, 'rgba(217, 119, 87, 0.2)');
+            // Larger, more prominent logo design
+            // Subtle background glow
+            const logoGlow = ctx.createRadialGradient(600, 180, 0, 600, 180, 100);
+            logoGlow.addColorStop(0, 'rgba(217, 119, 87, 0.1)');
             logoGlow.addColorStop(1, 'rgba(217, 119, 87, 0)');
             ctx.fillStyle = logoGlow;
-            ctx.fillRect(540, 120, 120, 120);
+            ctx.fillRect(500, 80, 200, 200);
             
-            // Modern minimalist 'C' logo
+            // Modern geometric container (larger)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.fillRect(520, 100, 160, 160);
+            
+            // Claude Code orange accent (more prominent)
+            ctx.fillStyle = '#D97757';
+            ctx.fillRect(520, 100, 160, 6); // Thicker top accent
+            
+            // Side accent
+            ctx.fillRect(520, 100, 6, 160);
+            
+            // Large, impactful 'C' logo
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 64px system-ui, -apple-system, sans-serif';
+            ctx.font = 'bold 96px system-ui, -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('C', 600, 195);
+            ctx.fillText('C', 600, 210);
             
-            // Subtle orange accent dot
+            // Decorative orange elements
             ctx.fillStyle = '#D97757';
             ctx.beginPath();
-            ctx.arc(620, 160, 3, 0, Math.PI * 2);
+            ctx.arc(640, 140, 4, 0, Math.PI * 2);
             ctx.fill();
             
-            // Vercel-style typography with artistic spacing
+            ctx.beginPath();
+            ctx.arc(560, 220, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Creative typography layout with larger sizes
             const lang = languages[currentLanguage];
             
-            // Main title - clean and modern
+            // Large main title with creative positioning
             ctx.fillStyle = '#ffffff';
-            ctx.font = '700 40px system-ui, -apple-system, sans-serif';
+            ctx.font = '700 48px system-ui, -apple-system, sans-serif';
             ctx.letterSpacing = '-0.02em';
             ctx.textAlign = 'center';
-            ctx.fillText(lang.title, 600, 295);
+            ctx.fillText(lang.title, 600, 320);
             
-            // Subtle subtitle
+            // Artistic subtitle positioning
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '400 22px system-ui, -apple-system, sans-serif';
+            ctx.letterSpacing = '0.02em';
+            ctx.fillText(lang.subtitle, 600, 355);
+            
+            // Decorative line under title
+            ctx.fillStyle = 'rgba(217, 119, 87, 0.4)';
+            ctx.fillRect(450, 365, 300, 2);
+            
+            // Creative feature layout with asymmetric design
             ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.font = '400 18px system-ui, -apple-system, sans-serif';
-            ctx.letterSpacing = '0.01em';
-            ctx.fillText(lang.subtitle, 600, 330);
-            
-            // Elegant feature list with artistic elements
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-            ctx.font = '400 14px system-ui, -apple-system, sans-serif';
             ctx.letterSpacing = '0.02em';
             
-            // Add subtle orange accents for each point
-            const yPositions = [375, 395, 415];
-            lang.benefits.forEach((benefit, index) => {
-                const y = yPositions[index];
-                
-                // Orange accent dot
+            // Creative asymmetric positioning
+            const features = [
+                { text: lang.benefits[0].replace('• ', ''), x: 200, y: 420 },
+                { text: lang.benefits[1].replace('• ', ''), x: 600, y: 450 },
+                { text: lang.benefits[2].replace('• ', ''), x: 350, y: 480 }
+            ];
+            
+            features.forEach((feature, index) => {
+                // Orange accent shapes (different for each)
                 ctx.fillStyle = '#D97757';
-                ctx.beginPath();
-                ctx.arc(300, y - 5, 2, 0, Math.PI * 2);
-                ctx.fill();
+                if (index === 0) {
+                    ctx.fillRect(feature.x - 20, feature.y - 8, 12, 2);
+                } else if (index === 1) {
+                    ctx.beginPath();
+                    ctx.arc(feature.x - 15, feature.y - 5, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(feature.x - 18, feature.y - 10, 2, 12);
+                }
                 
-                // Benefit text
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                // Feature text
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
                 ctx.textAlign = 'left';
-                ctx.fillText(benefit.replace('• ', ''), 320, y);
+                ctx.fillText(feature.text, feature.x, feature.y);
             });
             
             ctx.textAlign = 'center'; // Reset alignment
             
-            // Minimalist call-to-action (Vercel style)
-            // Subtle background highlight
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
-            ctx.fillRect(150, 470, 900, 50);
+            // Prominent call-to-action with creative design
+            // Artistic background shape
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.fillRect(100, 520, 1000, 80);
             
-            // Top border accent
+            // Multiple accent lines for visual interest
+            ctx.fillStyle = 'rgba(217, 119, 87, 0.6)';
+            ctx.fillRect(100, 520, 1000, 3);
+            
             ctx.fillStyle = 'rgba(217, 119, 87, 0.3)';
-            ctx.fillRect(150, 470, 900, 1);
+            ctx.fillRect(100, 525, 600, 1);
+            ctx.fillRect(100, 527, 400, 1);
             
-            // Clean, minimal text
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.font = '400 16px system-ui, -apple-system, sans-serif';
-            ctx.letterSpacing = '0.02em';
-            ctx.fillText(lang.url, 600, 500);
+            // Large, prominent URL text
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '500 20px system-ui, -apple-system, sans-serif';
+            ctx.letterSpacing = '0.03em';
+            ctx.textAlign = 'center';
+            ctx.fillText(lang.url, 600, 550);
+            
+            // Small decorative elements
+            ctx.fillStyle = '#D97757';
+            ctx.beginPath();
+            ctx.arc(150, 545, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(1050, 545, 2, 0, Math.PI * 2);
+            ctx.fill();
             
             // Download the image
             const link = document.createElement('a');
