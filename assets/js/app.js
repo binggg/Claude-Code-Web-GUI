@@ -1079,8 +1079,17 @@ ${t('vscodeOptions') || '打开方式'}:
     
     async fetchGistContent(gistId) {
         try {
+            // Get GitHub API key from localStorage if available
+            const apiKey = localStorage.getItem('github-api-key');
+            const headers = {};
+            if (apiKey) {
+                headers['Authorization'] = `token ${apiKey}`;
+            }
+            
             // Try GitHub API first
-            const response = await fetch(`https://api.github.com/gists/${gistId}`);
+            const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                headers: headers
+            });
             
             if (response.ok) {
                 const gist = await response.json();
@@ -2076,5 +2085,67 @@ window.importFromHomepage = async () => {
     } finally {
         document.getElementById('loading').classList.add('hidden');
     }
+};
+
+// Settings modal functions
+window.openSettingsModal = () => {
+    const modal = document.createElement('div');
+    modal.className = 'share-modal';
+    modal.innerHTML = `
+        <div class="share-modal-content">
+            <div class="share-modal-header">
+                <h3>⚙️ ${t('apiKeySettings') || 'API密钥设置'}</h3>
+                <button class="close-btn" onclick="this.closest('.share-modal').remove()">✕</button>
+            </div>
+            <div class="share-modal-body">
+                <div class="share-option">
+                    <h4>🔑 ${t('githubApiKey') || 'GitHub API密钥'}</h4>
+                    <p style="color: #a1a1aa; font-size: 12px; margin-bottom: 12px;">
+                        ${t('apiKeyDescription') || '可选：添加您的GitHub API密钥以避免频率限制'}
+                    </p>
+                    <input type="password" id="api-key-input" placeholder="${t('apiKeyPlaceholder') || '输入GitHub API密钥（可选）...'}"
+                           style="width: 100%; background: #262626; border: 1px solid #3f3f46; color: #ffffff; padding: 8px; border-radius: 4px; font-family: inherit; font-size: 12px; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <button class="action-btn" onclick="saveApiKey()" style="flex: 1;">
+                            💾 ${t('saveApiKey') || '保存API密钥'}
+                        </button>
+                        <button class="action-btn" onclick="removeApiKey()" style="flex: 1; background: #dc2626; border-color: #dc2626;">
+                            🗑️ ${t('removeApiKey') || '移除API密钥'}
+                        </button>
+                    </div>
+                    <p style="color: #6b7280; font-size: 11px;">
+                        <a href="https://github.com/settings/tokens" target="_blank" style="color: #667eea;">
+                            ${t('apiKeyHelp') || '从 GitHub设置 > Developer settings > Personal access tokens 获取API密钥'}
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Load existing API key
+    const existingKey = localStorage.getItem('github-api-key');
+    document.body.appendChild(modal);
+    
+    const input = document.getElementById('api-key-input');
+    if (existingKey) {
+        input.value = existingKey;
+    }
+};
+
+window.saveApiKey = () => {
+    const apiKey = document.getElementById('api-key-input').value.trim();
+    if (apiKey) {
+        localStorage.setItem('github-api-key', apiKey);
+        alert(t('apiKeySaved') || 'API密钥保存成功');
+    } else {
+        alert('请输入有效的API密钥');
+    }
+};
+
+window.removeApiKey = () => {
+    localStorage.removeItem('github-api-key');
+    document.getElementById('api-key-input').value = '';
+    alert(t('apiKeyRemoved') || 'API密钥移除成功');
 };
 

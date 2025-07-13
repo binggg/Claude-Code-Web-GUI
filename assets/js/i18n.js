@@ -11,8 +11,8 @@ const LANGUAGES = {
         features: {
             title: 'Key Features',
             list: [
-                '📁 **Local Browsing**: Securely view your Claude Code session history',
-                '🔗 **Easy Sharing**: Share sessions with others via GitHub Gist'
+                '📁 Local Browsing: Securely view your Claude Code session history',
+                '🔗 Easy Sharing: Share sessions with others via GitHub Gist'
             ]
         },
         instructions: {
@@ -171,7 +171,15 @@ const LANGUAGES = {
         gistUrlOrIdPlaceholder: 'Enter Gist URL or ID...',
         viewSession: 'View Session',
         pleaseEnterGistUrlOrId: 'Please enter Gist URL or ID',
-        claudeCodeSession: 'Claude Code Session',
+        apiKeySettings: 'API Key Settings',
+        githubApiKey: 'GitHub API Key',
+        apiKeyDescription: 'Optional: Add your GitHub API key to avoid rate limiting',
+        apiKeyPlaceholder: 'Enter GitHub API key (optional)...',
+        saveApiKey: 'Save API Key',
+        removeApiKey: 'Remove API Key',
+        apiKeySaved: 'API key saved successfully',
+        apiKeyRemoved: 'API key removed successfully',
+        apiKeyHelp: 'Get your API key from GitHub Settings > Developer settings > Personal access tokens',
         viewThisSession: '🚀 View this Claude Code session: "{{title}}"',
         errors: {
             unsupported: 'Your browser does not support the File System Access API. Please use the latest version of Chrome or Edge.',
@@ -204,8 +212,8 @@ const LANGUAGES = {
         features: {
             title: '主要特性',
             list: [
-                '📁 **本地浏览**: 安全查看您的Claude Code会话历史',
-                '🔗 **便捷分享**: 通过GitHub Gist与他人分享会话'
+                '📁 本地浏览: 安全查看您的Claude Code会话历史',
+                '🔗 便捷分享: 通过GitHub Gist与他人分享会话'
             ]
         },
         instructions: {
@@ -360,6 +368,15 @@ const LANGUAGES = {
         gistUrlOrIdPlaceholder: '输入Gist URL或ID...',
         viewSession: '查看会话',
         pleaseEnterGistUrlOrId: '请输入Gist URL或ID',
+        apiKeySettings: 'API密钥设置',
+        githubApiKey: 'GitHub API密钥',
+        apiKeyDescription: '可选：添加您的GitHub API密钥以避免频率限制',
+        apiKeyPlaceholder: '输入GitHub API密钥（可选）...',
+        saveApiKey: '保存API密钥',
+        removeApiKey: '移除API密钥',
+        apiKeySaved: 'API密钥保存成功',
+        apiKeyRemoved: 'API密钥移除成功',
+        apiKeyHelp: '从 GitHub设置 > Developer settings > Personal access tokens 获取API密钥',
         claudeCodeSession: 'Claude Code会话',
         viewThisSession: '🚀 查看这个Claude Code会话："{{title}}"',
         errors: {
