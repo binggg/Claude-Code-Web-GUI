@@ -10,9 +10,9 @@
     </style>
 </head>
 <body>
-    <h1>Social Media Card Generator</h1>
-    <p>Click the button to generate and download a social media card PNG (1200x630px)</p>
-    <button onclick="generateCard()">Generate Social Card PNG</button>
+    <h1>Claude Code Session Social Card Generator</h1>
+    <p>Generate social media cards for sharing Claude Code programming sessions and AI conversations</p>
+    <button onclick="generateCard()">Generate Session Sharing Card</button>
     <br>
     <canvas id="socialCard" width="1200" height="630"></canvas>
 
@@ -34,37 +34,37 @@
             ctx.roundRect(540, 120, 120, 120, 20);
             ctx.fill();
             
-            // Logo text
+            // Logo text - use conversation icon
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 60px Arial';
+            ctx.font = 'bold 55px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('C', 600, 200);
+            ctx.fillText('💬', 600, 200);
             
-            // Title
+            // Title - Focus on sharing sessions
             ctx.fillStyle = '#667eea';
-            ctx.font = 'bold 48px Arial';
-            ctx.fillText('Claude Code Web GUI', 600, 300);
+            ctx.font = 'bold 44px Arial';
+            ctx.fillText('🚀 Share Your Claude Code Session', 600, 290);
             
             // Subtitle
             ctx.fillStyle = '#a1a1aa';
-            ctx.font = '24px Arial';
-            ctx.fillText('Smart Code Session Browser', 600, 340);
+            ctx.font = '26px Arial';
+            ctx.fillText('AI Programming Conversations Worth Sharing', 600, 330);
             
-            // Features
+            // Benefits of sharing sessions
             ctx.fillStyle = '#71717a';
             ctx.font = '18px Arial';
-            ctx.fillText('🚀 Runs entirely in your browser', 600, 400);
-            ctx.fillText('🔗 Easy sharing via GitHub Gist', 600, 430);
-            ctx.fillText('🔒 Privacy protection, no server required', 600, 460);
+            ctx.fillText('🎨 Learn AI coding techniques from real conversations', 600, 390);
+            ctx.fillText('💡 Discover creative problem-solving approaches', 600, 420);
+            ctx.fillText('🤝 Share knowledge and help others learn', 600, 450);
             
-            // URL
+            // Call to action
             ctx.fillStyle = '#667eea';
-            ctx.font = '20px Arial';
-            ctx.fillText('binggg.github.io/Claude-Code-Web-GUI', 600, 520);
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText('View & Share at: binggg.github.io/Claude-Code-Web-GUI', 600, 510);
             
             // Download the image
             const link = document.createElement('a');
-            link.download = 'claude-code-social-card.png';
+            link.download = 'claude-code-session-sharing-card.png';
             link.href = canvas.toDataURL();
             link.click();
         }
