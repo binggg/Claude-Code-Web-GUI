@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Social Card PNG</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        canvas { border: 1px solid #ccc; margin: 20px 0; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Social Media Card Generator</h1>
+    <p>Click the button to generate and download a social media card PNG (1200x630px)</p>
+    <button onclick="generateCard()">Generate Social Card PNG</button>
+    <br>
+    <canvas id="socialCard" width="1200" height="630"></canvas>
+
+    <script>
+        function generateCard() {
+            const canvas = document.getElementById('socialCard');
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+            gradient.addColorStop(0, '#000000');
+            gradient.addColorStop(1, '#1a1a1a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1200, 630);
+            
+            // Logo background circle
+            ctx.fillStyle = '#D97757';
+            ctx.beginPath();
+            ctx.roundRect(540, 120, 120, 120, 20);
+            ctx.fill();
+            
+            // Logo text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('C', 600, 200);
+            
+            // Title
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 48px Arial';
+            ctx.fillText('Claude Code Web GUI', 600, 300);
+            
+            // Subtitle
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '24px Arial';
+            ctx.fillText('Smart Code Session Browser', 600, 340);
+            
+            // Features
+            ctx.fillStyle = '#71717a';
+            ctx.font = '18px Arial';
+            ctx.fillText('🚀 Runs entirely in your browser', 600, 400);
+            ctx.fillText('🔗 Easy sharing via GitHub Gist', 600, 430);
+            ctx.fillText('🔒 Privacy protection, no server required', 600, 460);
+            
+            // URL
+            ctx.fillStyle = '#667eea';
+            ctx.font = '20px Arial';
+            ctx.fillText('binggg.github.io/Claude-Code-Web-GUI', 600, 520);
+            
+            // Download the image
+            const link = document.createElement('a');
+            link.download = 'claude-code-social-card.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Polyfill for roundRect if not available
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+    </script>
+</body>
+</html>
