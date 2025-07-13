@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Web GUI</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="🚀 浏览、查看和分享您的 Claude Code 会话历史 - 完全在浏览器中运行，无需服务器！">
+    <meta name="keywords" content="Claude Code, 会话浏览器, AI, 编程助手, 浏览器应用, 隐私保护">
+    <meta name="author" content="Claude Code Web GUI">
+    
+    <!-- Social Media Meta Tags -->
+    <meta property="og:title" content="Claude Code Web GUI - Smart Code Session Browser">
+    <meta property="og:description" content="🚀 Browse, view and share your Claude Code sessions - runs entirely in browser, no server required!">
+    <meta property="og:image" content="https://binggg.github.io/Claude-Code-Web-GUI/assets/icons/claude-code-session-sharing-card-en.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Claude Code Web GUI - Smart Code Session Browser">
+    <meta property="og:url" content="https://binggg.github.io/Claude-Code-Web-GUI/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Claude Code Web GUI">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Claude Code Web GUI - Smart Code Session Browser">
+    <meta name="twitter:description" content="🚀 Browse, view and share your Claude Code sessions - runs entirely in browser, no server required!">
+    <meta name="twitter:image" content="https://binggg.github.io/Claude-Code-Web-GUI/assets/icons/claude-code-session-sharing-card-en.png">
+    <meta name="twitter:image:alt" content="Claude Code Web GUI - Smart Code Session Browser">
+    <meta name="twitter:domain" content="binggg.github.io">
+    <meta name="twitter:url" content="https://binggg.github.io/Claude-Code-Web-GUI/">
+    
+    <!-- Fix for Twitter Card debugging -->
+    <meta name="twitter:site" content="@github">
+    <meta name="twitter:creator" content="@github">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#000000">
+    <link rel="canonical" href="https://binggg.github.io/Claude-Code-Web-GUI/">
+    
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Vue 应用容器 -->
+        <div class="container">
+            <!-- Header 组件 -->
+            <app-header
+                v-if="!sharedSession"
+                :current-lang="currentLang"
+                @switch-lang="switchLanguage"
+                @select-directory="requestDirectoryAccess"
+                @open-gist-import="openGistImportDialog"
+                @open-settings="openSettingsModal"
+            ></app-header>
+            
+            <!-- 错误信息 -->
+            <div v-if="error" class="error">{{ error }}</div>
+            
+            <!-- 主布局 -->
+            <div v-if="!sharedSession && directoryHandle" class="main-layout">
+                <!-- 侧边栏 -->
+                <app-sidebar
+                    :sessions="filteredSessions"
+                    :search-query="searchQuery"
+                    :session-stats="sessionStats"
+                    :current-lang="currentLang"
+                    @search="handleSearch"
+                    @session-select="selectSession"
+                    @toggle="toggleSidebar"
+                ></app-sidebar>
+                
+                <!-- 主内容区 -->
+                <main-content
+                    :current-session="currentSession"
+                    :current-lang="currentLang"
+                    @back="returnToHomepage"
+                    @share="shareSession"
+                    @export="exportSession"
+                ></main-content>
+            </div>
+            
+            <!-- 分享的会话显示 -->
+            <shared-session
+                v-if="sharedSession"
+                :session="sharedSession"
+                :current-lang="currentLang"
+                @back="backToHome"
+            ></shared-session>
+            
+            <!-- 加载模态框 -->
+            <loading-modal
+                v-if="loading"
+                :message="loadingMessage"
+                :current-lang="currentLang"
+            ></loading-modal>
+            
+            <!-- 错误模态框 -->
+            <error-modal
+                v-if="modalError"
+                :error="modalError"
+                :current-lang="currentLang"
+                @retry="retryLastAction"
+                @configure-api="openSettingsModal"
+                @close="clearModalError"
+            ></error-modal>
+            
+            <!-- Gist 导入对话框 -->
+            <gist-import-modal
+                v-if="showGistImport"
+                :current-lang="currentLang"
+                @import="handleGistImport"
+                @close="closeGistImportDialog"
+            ></gist-import-modal>
+            
+            <!-- 设置模态框 -->
+            <settings-modal
+                v-if="showSettings"
+                :current-lang="currentLang"
+                @close="closeSettingsModal"
+            ></settings-modal>
+            
+            <!-- 分享模态框 -->
+            <share-modal
+                v-if="showShareModal"
+                :session="currentSession"
+                :current-lang="currentLang"
+                @close="closeShareModal"
+            ></share-modal>
+            
+            <!-- FAB 按钮 -->
+            <fab-buttons
+                v-if="currentSession"
+                :current-lang="currentLang"
+                @share="openShareModal"
+                @continue="toggleChatInput"
+            ></fab-buttons>
+            
+            <!-- 语言切换 -->
+            <language-toggle
+                v-if="!sharedSession"
+                :current-lang="currentLang"
+                @switch="switchLanguage"
+            ></language-toggle>
+            
+            <!-- 加载指示器 -->
+            <div v-if="initialLoading" class="loading">
+                <p>{{ t('loading') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- 应用脚本 -->
+    <script type="module">
+        // 导入组件和逻辑
+        import './assets/js/vue/app-vue.js';
+    </script>
+</body>
+</html>
