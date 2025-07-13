@@ -22,7 +22,7 @@ const Header = ({
   return (
     <div className="header">
       <div className="header-title">
-        <img src="/icons/logo.svg" className="logo-svg" alt="Claude Code Web GUI" />
+        <img src="icons/logo.svg" className="logo-svg" alt="Claude Code Web GUI" />
         <h1>{t('title')}</h1>
       </div>
       <p>{t('subtitle')}</p>

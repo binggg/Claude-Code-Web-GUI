@@ -86,7 +86,7 @@ const Sidebar = ({
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-brand" onClick={onReturnToHomepage}>
-          <img src="/icons/logo.svg" className="sidebar-brand-logo" alt="Logo" />
+          <img src="icons/logo.svg" className="sidebar-brand-logo" alt="Logo" />
           <div className="sidebar-brand-text">{t('title')}</div>
         </div>
         <div className="sidebar-controls">

@@ -65,7 +65,7 @@ const Message = ({ message, index, t, view }) => {
           'U'
         ) : (
           <img 
-            src="/icons/claude-avatar.svg" 
+            src="icons/claude-avatar.svg" 
             className="claude-avatar-svg" 
             alt="Claude" 
           />
