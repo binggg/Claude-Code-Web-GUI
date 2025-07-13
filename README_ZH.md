@@ -39,8 +39,18 @@ https://github.com/user-attachments/assets/039dc640-d5fc-4c29-9bb8-a386bd1a9da8
 ```bash
 git clone https://github.com/binggg/Claude-Code-Web-GUI.git
 cd Claude-Code-Web-GUI
-python -m http.server 8000
-# 浏览器打开 http://localhost:8000
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 预览生产构建
+npm run preview
 ```
 
 ## 使用方法
@@ -69,12 +79,49 @@ python -m http.server 8000
 - Edge 86+
 - 其他基于 Chromium 的浏览器
 
+## 开发指南
+
+### 前置要求
+- Node.js 16+
+- 支持 File System Access API 的现代浏览器
+
+### 项目结构
+```
+src/
+├── components/          # React 组件
+│   ├── Header.jsx      # 主页头部
+│   ├── Sidebar.jsx     # 会话浏览器
+│   ├── MainContent.jsx # 主内容区域
+│   └── ...             # 其他组件
+├── hooks/              # 自定义 React 钩子
+├── utils/              # 业务逻辑和工具函数
+├── styles/             # CSS 样式
+└── App.jsx            # 主应用组件
+```
+
+### 添加新功能
+1. 在 `src/components/` 中创建组件
+2. 在 `src/utils/claudeCodeManager.js` 中添加业务逻辑
+3. 在 `src/utils/i18n.js` 中更新翻译
+4. 在 `src/styles/globals.css` 中添加样式
+
 ## 技术架构
 
-- 前端：原生 JavaScript ES6+
+### React 版本（当前）
+- 前端：React 18 现代化钩子
+- 构建工具：Vite 快速开发和优化构建
 - 样式：现代 CSS（Grid + Flexbox）
 - 文件访问：File System Access API
 - 数据解析：JSONL 格式支持
+- 组件结构：模块化、可复用的 React 组件
+
+### 核心组件
+- **Header**：主页头部与操作区
+- **Sidebar**：会话浏览器与项目分组
+- **MainContent**：聊天消息显示区域
+- **MarkdownContent**：增强的 Markdown 渲染与语法高亮
+- **ToolCall**：工具调用可视化
+- **FABContainer**：快速操作浮动按钮
 
 ## 隐私说明
 
