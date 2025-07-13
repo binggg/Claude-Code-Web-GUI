@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Generate Social Card PNG</title>
+    <title>Claude Code Session Social Card Generator</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create beautiful social media cards for sharing Claude Code programming sessions and AI conversations.">
+    <meta property="og:title" content="Claude Code Session Social Card Generator">
+    <meta property="og:description" content="Create beautiful social media cards for sharing Claude Code programming sessions and AI conversations.">
+    <meta property="og:type" content="website">
     <style>
         * {
             margin: 0;
@@ -186,12 +192,48 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .language-selector {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .language-selector label {
+            font-weight: 600;
+            color: #333;
+            margin-right: 10px;
+        }
+        
+        .language-selector select {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+        }
+        
+        .language-selector select:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎨 Claude Code Session Social Card Generator</h1>
+        <h1>Claude Code Session Social Card Generator</h1>
         <p class="description">Create beautiful social media cards for sharing Claude Code programming sessions and AI conversations that inspire learning and collaboration.</p>
+        
+        <div class="language-selector">
+            <label for="language">Language / 语言:</label>
+            <select id="language" onchange="updateLanguage()">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+            </select>
+        </div>
         
         <div class="features">
             <div class="feature">
@@ -212,7 +254,7 @@
         </div>
         
         <button class="generate-btn" onclick="generateCard()">
-            🎨 Generate Session Sharing Card
+            Generate Session Sharing Card
         </button>
         
         <div class="loading" id="loading">
@@ -226,6 +268,68 @@
     </div>
 
     <script>
+        // Language configuration
+        const languages = {
+            en: {
+                title: 'Share Your Claude Code Session',
+                subtitle: 'AI Programming Conversations Worth Sharing',
+                benefits: [
+                    '• Learn AI coding techniques from real conversations',
+                    '• Discover creative problem-solving approaches',
+                    '• Share knowledge and help others learn'
+                ],
+                url: 'View & Share at: binggg.github.io/Claude-Code-Web-GUI'
+            },
+            zh: {
+                title: '分享您的 Claude Code 会话',
+                subtitle: '值得分享的 AI 编程对话',
+                benefits: [
+                    '• 从真实对话中学习 AI 编程技巧',
+                    '• 发现创意解决问题的方法',
+                    '• 分享知识，帮助他人学习'
+                ],
+                url: '查看和分享：binggg.github.io/Claude-Code-Web-GUI'
+            }
+        };
+        
+        let currentLanguage = 'en';
+        
+        function updateLanguage() {
+            currentLanguage = document.getElementById('language').value;
+            
+            // Update page meta tags based on language
+            const metaDescriptions = {
+                en: 'Create beautiful social media cards for sharing Claude Code programming sessions and AI conversations.',
+                zh: '为分享 Claude Code 编程会话和 AI 对话创建美丽的社交媒体卡片。'
+            };
+            
+            const titles = {
+                en: 'Claude Code Session Social Card Generator',
+                zh: 'Claude Code 会话社交卡片生成器'
+            };
+            
+            // Update page title
+            document.title = titles[currentLanguage];
+            
+            // Update meta description if exists
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute('content', metaDescriptions[currentLanguage]);
+            }
+            
+            // Update page heading
+            const heading = document.querySelector('h1');
+            if (heading) {
+                heading.textContent = titles[currentLanguage];
+            }
+            
+            // Update description
+            const desc = document.querySelector('.description');
+            if (desc) {
+                desc.textContent = metaDescriptions[currentLanguage];
+            }
+        }
+        
         function generateCard() {
             // Show loading animation
             const loading = document.getElementById('loading');
@@ -239,70 +343,98 @@
                 const canvas = document.getElementById('socialCard');
                 const ctx = canvas.getContext('2d');
             
-            // Enhanced background with gradient and pattern
+            // Cool black background with texture and depth
             const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
-            gradient.addColorStop(0, '#667eea');
-            gradient.addColorStop(0.5, '#764ba2');
-            gradient.addColorStop(1, '#5a5a9e');
+            gradient.addColorStop(0, '#0a0a0a');
+            gradient.addColorStop(0.3, '#1a1a1a');
+            gradient.addColorStop(0.7, '#2a2a2a');
+            gradient.addColorStop(1, '#0f0f0f');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, 1200, 630);
             
-            // Add subtle pattern overlay
-            ctx.globalAlpha = 0.1;
-            for(let i = 0; i < 1200; i += 40) {
-                for(let j = 0; j < 630; j += 40) {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(i, j, 2, 2);
+            // Add carbon fiber texture pattern
+            ctx.globalAlpha = 0.08;
+            for(let i = 0; i < 1200; i += 8) {
+                for(let j = 0; j < 630; j += 8) {
+                    if ((i + j) % 16 === 0) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(i, j, 2, 2);
+                        ctx.fillRect(i + 4, j + 4, 2, 2);
+                    }
                 }
+            }
+            
+            // Add subtle noise texture
+            for(let i = 0; i < 2000; i++) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.03})`;
+                ctx.fillRect(Math.random() * 1200, Math.random() * 630, 1, 1);
             }
             ctx.globalAlpha = 1;
             
-            // Modern logo design with shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            // Claude Code style logo with orange theme
+            // Outer glow effect
+            ctx.fillStyle = 'rgba(217, 119, 87, 0.3)';
             ctx.beginPath();
-            ctx.roundRect(545, 125, 120, 120, 25);
+            ctx.roundRect(535, 115, 130, 130, 20);
             ctx.fill();
             
-            // Logo background with gradient
-            const logoGradient = ctx.createLinearGradient(540, 120, 660, 240);
-            logoGradient.addColorStop(0, '#ffffff');
-            logoGradient.addColorStop(1, '#f8f9fa');
-            ctx.fillStyle = logoGradient;
+            // Inner shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
             ctx.beginPath();
-            ctx.roundRect(540, 120, 120, 120, 25);
+            ctx.roundRect(542, 122, 116, 116, 18);
             ctx.fill();
             
-            // Logo border
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            // Main logo background - Claude Code orange
+            ctx.fillStyle = '#D97757';
+            ctx.beginPath();
+            ctx.roundRect(540, 120, 120, 120, 20);
+            ctx.fill();
             
-            // Logo text - modern conversation icon
-            ctx.fillStyle = '#667eea';
-            ctx.font = 'bold 48px Arial';
+            // Subtle inner highlight
+            const logoHighlight = ctx.createLinearGradient(540, 120, 660, 180);
+            logoHighlight.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+            logoHighlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = logoHighlight;
+            ctx.beginPath();
+            ctx.roundRect(540, 120, 120, 60, 20);
+            ctx.fill();
+            
+            // Logo text - 'C' for Claude Code
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 72px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('💬', 600, 195);
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.fillText('C', 600, 200);
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
             
-            // Title with shadow effect
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            const lang = languages[currentLanguage];
+            
+            // Title with elegant styling - multilingual
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.font = 'bold 42px Arial';
-            ctx.fillText('🚀 Share Your Claude Code Session', 602, 292);
+            ctx.fillText(lang.title, 602, 292);
             
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 42px Arial';
-            ctx.fillText('🚀 Share Your Claude Code Session', 600, 290);
+            ctx.fillText(lang.title, 600, 290);
             
             // Subtitle with elegant styling
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.font = '24px Arial';
-            ctx.fillText('AI Programming Conversations Worth Sharing', 600, 325);
-            
-            // Benefits with modern icons and styling
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '24px Arial';
+            ctx.fillText(lang.subtitle, 600, 325);
+            
+            // Benefits with professional icons - multilingual
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.font = '16px Arial';
-            ctx.fillText('🎨 Learn AI coding techniques from real conversations', 600, 375);
-            ctx.fillText('💡 Discover creative problem-solving approaches', 600, 400);
-            ctx.fillText('🤝 Share knowledge and help others learn', 600, 425);
+            ctx.fillText(lang.benefits[0], 600, 375);
+            ctx.fillText(lang.benefits[1], 600, 400);
+            ctx.fillText(lang.benefits[2], 600, 425);
             
             // Call to action with enhanced styling
             ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
@@ -314,11 +446,11 @@
             
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 20px Arial';
-            ctx.fillText('View & Share at: binggg.github.io/Claude-Code-Web-GUI', 600, 500);
+            ctx.fillText(lang.url, 600, 500);
             
             // Download the image
             const link = document.createElement('a');
-            link.download = 'claude-code-session-sharing-card.png';
+            link.download = `claude-code-session-sharing-card-${currentLanguage}.png`;
             link.href = canvas.toDataURL();
             link.click();
             
