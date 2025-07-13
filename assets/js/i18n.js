@@ -12,21 +12,23 @@ const LANGUAGES = {
             title: 'Key Features',
             list: [
                 '📁 **Local Browsing**: Securely view your Claude Code session history',
-                '🔗 **Easy Sharing**: Share sessions with others via GitHub Gist',
-                '🌐 **Import & View**: View sessions shared by others',
-                '🔒 **Privacy Protection**: Runs entirely in browser, no server dependency'
+                '🔗 **Easy Sharing**: Share sessions with others via GitHub Gist'
             ]
         },
         instructions: {
-            title: 'Key Features:',
+            title: 'Get Started:',
             steps: [
-                '📁 **Local Browsing**: Securely view your Claude Code session history',
-                '🔗 **Easy Sharing**: Share sessions with others via GitHub Gist',
-                '🌐 **Import & View**: View sessions shared by others',
-                '🔒 **Privacy Protection**: Runs entirely in browser, no server dependency'
+                'Click the button below to select the .claude directory',
+                'In the file picker, press Cmd+Shift+. (Mac) or Ctrl+H (Windows/Linux) to show hidden files',
+                'Find and select the .claude directory (usually in user home directory: ~/)',
+                'Start browsing your session history'
             ],
-            locations: 'Get Started: Click the button below to select the .claude directory',
-            locationList: []
+            locations: 'Common locations:',
+            locationList: [
+                'Mac: /Users/[username]/.claude',
+                'Windows: C:\\Users\\[username]\\.claude',
+                'Linux: /home/[username]/.claude'
+            ]
         },
         selectBtn: '📁 Select .claude directory',
         gistImportBtn: '🌐 View shared sessions',
@@ -206,23 +208,24 @@ const LANGUAGES = {
         features: {
             title: '主要特性',
             list: [
-                '直接在浏览器中查看和浏览 Claude Code 会话历史',
-                '与他人分享和协作查看对话记录',
-                '从 GitHub Gist 导入共享会话，方便学习和教学',
-                '导出会话到多种格式（Markdown、PDF 等）',
-                '完全隐私 - 所有处理都在您的浏览器本地进行'
+                '📁 **本地浏览**: 安全查看您的Claude Code会话历史',
+                '🔗 **便捷分享**: 通过GitHub Gist与他人分享会话'
             ]
         },
         instructions: {
-            title: '主要特性：',
+            title: '使用说明：',
             steps: [
-                '📁 **本地浏览**: 安全查看您的Claude Code会话历史',
-                '🔗 **便捷分享**: 通过GitHub Gist与他人分享会话',
-                '🌐 **导入查看**: 查看他人分享的会话内容',
-                '🔒 **隐私保护**: 完全在浏览器中运行，无服务器依赖'
+                '点击下方按钮选择目录',
+                '在文件选择器中，按 <kbd>Cmd+Shift+.</kbd> (Mac) 或 <kbd>Ctrl+H</kbd> (Windows/Linux) 显示隐藏文件',
+                '找到并选择 <code>.claude</code> 目录（通常在用户主目录下：<code>~/</code>)',
+                '开始浏览您的会话记录'
             ],
-            locations: '点击下方按钮选择目录\n\n在文件选择器中，按 Cmd+Shift+. (Mac) 或 Ctrl+H (Windows/Linux) 显示隐藏文件\n\n找到并选择 .claude 目录（通常在用户主目录下：~/)\n\n开始浏览您的会话记录',
-            locationList: []
+            locations: '常见位置：',
+            locationList: [
+                'Mac: <code>/Users/[用户名]/.claude</code>',
+                'Windows: <code>C:\\Users\\[用户名]\\.claude</code>',
+                'Linux: <code>/home/[用户名]/.claude</code>'
+            ]
         },
         selectBtn: '📁 选择 .claude 目录',
         gistImportBtn: '🌐 查看他人分享的会话',
