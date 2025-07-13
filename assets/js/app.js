@@ -115,21 +115,110 @@ class ClaudeCodeGUI {
     }
     
     async autoImportGist(gistUrl) {
-        // Show loading
-        this.showLoading(true);
+        // Show loading modal for shared session import
+        this.showImportLoadingModal();
         
         try {
             await this.importFromGist(gistUrl);
         } catch (error) {
             console.error('Auto-import failed:', error);
-            // Show error and fallback to manual import
-            this.showError(`${t('gistImportError') || 'Gist导入失败'}: ${error.message}`);
-        } finally {
-            this.showLoading(false);
+            // Show error modal with suggestions
+            this.showImportErrorModal(error, gistUrl);
         }
     }
     
+    showImportLoadingModal() {
+        const modal = document.createElement('div');
+        modal.className = 'share-modal loading-modal';
+        modal.innerHTML = `
+            <div class="share-modal-content">
+                <div class="share-modal-header">
+                    <h3>🔗 ${t('loadingSharedSession')}</h3>
+                </div>
+                <div class="share-modal-body" style="text-align: center; padding: 30px 20px;">
+                    <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto 20px; border: 3px solid #3f3f46; border-top: 3px solid #f97316; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <p style="color: #a1a1aa; margin: 0; font-size: 14px;">${t('fetchingFromGist')}</p>
+                </div>
+            </div>
+        `;
+        
+        // Add animation CSS if not exists
+        if (!document.querySelector('#spinner-animation')) {
+            const style = document.createElement('style');
+            style.id = 'spinner-animation';
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(modal);
+    }
+    
+    showImportErrorModal(error, gistUrl) {
+        // Remove loading modal
+        const loadingModal = document.querySelector('.loading-modal');
+        if (loadingModal) {
+            loadingModal.remove();
+        }
+        
+        // Determine error type and suggestion
+        let suggestion = '';
+        let showApiKeyButton = false;
+        
+        if (error.message.includes('rate limit') || error.message.includes('403')) {
+            suggestion = t('rateLimitSuggestion');
+            showApiKeyButton = true;
+        } else if (error.message.includes('fetch') || error.message.includes('network')) {
+            suggestion = t('networkErrorSuggestion');
+        } else {
+            suggestion = t('invalidGistSuggestion');
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'share-modal error-modal';
+        modal.innerHTML = `
+            <div class="share-modal-content">
+                <div class="share-modal-header">
+                    <h3>❌ ${t('loadingFailed')}</h3>
+                    <button class="close-btn" onclick="this.closest('.share-modal').remove()">✕</button>
+                </div>
+                <div class="share-modal-body">
+                    <div style="background: #7f1d1d; border: 1px solid #dc2626; border-radius: 6px; padding: 16px; margin-bottom: 16px;">
+                        <p style="color: #fecaca; margin: 0; font-size: 13px; line-height: 1.5;">
+                            ${suggestion}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        ${showApiKeyButton ? `
+                            <button class="action-btn" onclick="this.closest('.share-modal').remove(); openSettingsModal();" style="flex: 1; min-width: 120px;">
+                                ⚙️ ${t('configureApiKey')}
+                            </button>
+                        ` : ''}
+                        <button class="action-btn" onclick="this.closest('.share-modal').remove(); window.claudeGUI.autoImportGist('${gistUrl}');" style="flex: 1; min-width: 100px;">
+                            🔄 ${t('retryLoading')}
+                        </button>
+                        <button class="action-btn secondary" onclick="this.closest('.share-modal').remove();" style="flex: 1; min-width: 80px;">
+                            ${t('closeError')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+    
     displaySharedSession(sessionData) {
+        // Close loading modal if it exists
+        const loadingModal = document.querySelector('.loading-modal');
+        if (loadingModal) {
+            loadingModal.remove();
+        }
+        
         // Update page meta tags for social sharing
         this.updateMetaTagsForSession(sessionData);
         
@@ -1293,6 +1382,12 @@ ${t('vscodeOptions') || '打开方式'}:
     }
     
     displayImportedGist(gistData) {
+        // Close loading modal if it exists
+        const loadingModal = document.querySelector('.loading-modal');
+        if (loadingModal) {
+            loadingModal.remove();
+        }
+        
         // Update page meta tags for Gist sharing
         this.updateMetaTagsForGist(gistData);
         
