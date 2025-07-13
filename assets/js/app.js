@@ -1196,7 +1196,7 @@ ${t('vscodeOptions') || '打开方式'}:
                         <h4>🔧 ${t('manualImport') || '手动导入'}</h4>
                         <p>${t('manualImportDescription') || '如果自动导入失败，您可以手动复制Gist内容'}</p>
                         <ol style="color: #a1a1aa; font-size: 12px; margin: 12px 0; padding-left: 20px;">
-                            <li>${t('openGistPage') || '打开Gist页面'}: <a href="${gistUrl}" target="_blank" style="color: #667eea;">${gistUrl}</a></li>
+                            <li>${t('openGistPage') || '打开Gist页面'}: <a href="${gistUrl}/raw" target="_blank" style="color: #667eea;">${t('openGistPage') || '打开Gist页面'}</a></li>
                             <li>${t('copyGistContent') || '复制文件内容'}</li>
                             <li>${t('pasteContentBelow') || '将内容粘贴到下方文本框'}</li>
                         </ol>

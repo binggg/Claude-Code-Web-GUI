@@ -214,19 +214,15 @@ const LANGUAGES = {
             ]
         },
         instructions: {
-            title: '使用说明：',
+            title: '主要特性：',
             steps: [
-                '点击下方按钮选择目录',
-                '在文件选择器中，按 <kbd>Cmd+Shift+.</kbd> (Mac) 或 <kbd>Ctrl+H</kbd> (Windows/Linux) 显示隐藏文件',
-                '找到并选择 <code>.claude</code> 目录（通常在用户主目录下：<code>~/</code>)',
-                '开始浏览您的会话记录'
+                '📁 **本地浏览**: 安全查看您的Claude Code会话历史',
+                '🔗 **便捷分享**: 通过GitHub Gist与他人分享会话',
+                '🌐 **导入查看**: 查看他人分享的会话内容',
+                '🔒 **隐私保护**: 完全在浏览器中运行，无服务器依赖'
             ],
-            locations: '常见位置：',
-            locationList: [
-                'Mac: <code>/Users/[用户名]/.claude</code>',
-                'Windows: <code>C:\\Users\\[用户名]\\.claude</code>',
-                'Linux: <code>/home/[用户名]/.claude</code>'
-            ]
+            locations: '点击下方按钮选择目录\n\n在文件选择器中，按 Cmd+Shift+. (Mac) 或 Ctrl+H (Windows/Linux) 显示隐藏文件\n\n找到并选择 .claude 目录（通常在用户主目录下：~/)\n\n开始浏览您的会话记录',
+            locationList: []
         },
         selectBtn: '📁 选择 .claude 目录',
         gistImportBtn: '🌐 查看他人分享的会话',
