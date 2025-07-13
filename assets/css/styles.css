@@ -1171,8 +1171,9 @@ body {
 .tool-toggle {
     margin-left: auto;
     color: #71717a;
-    font-size: 10px;
+    font-size: 12px;
     transition: transform 0.2s;
+    user-select: none;
 }
 
 .tool-call-icon {
@@ -1189,14 +1190,15 @@ body {
 }
 
 .tool-call-content {
-    padding: 12px;
+    padding: 0;
+    max-height: 0;
     transition: max-height 0.3s ease, padding 0.3s ease;
     overflow: hidden;
 }
 
-.tool-call-content.collapsed {
-    max-height: 0;
-    padding: 0 12px;
+.tool-call-content:not(.collapsed) {
+    padding: 12px;
+    max-height: 500px;
 }
 
 .tool-call-input {
@@ -1207,10 +1209,37 @@ body {
     font-family: inherit;
     font-size: 11px;
     overflow-x: auto;
-    margin-top: 6px;
     border: 1px solid #262626;
     white-space: pre-wrap;
     line-height: 1.4;
+}
+
+.tool-input-header {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tool-input-header strong {
+    color: #e4e4e7;
+    font-size: 11px;
+}
+
+.tool-input-header .copy-btn {
+    background: #262626;
+    border: 1px solid #404040;
+    color: #a1a1aa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tool-input-header .copy-btn:hover {
+    background: #404040;
+    color: #ffffff;
 }
 
 .timestamp {

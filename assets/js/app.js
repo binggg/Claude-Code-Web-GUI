@@ -848,62 +848,13 @@ ${t('vscodeOptions') || '打开方式'}:
     }
     
     async shareToGist(sessionData) {
-        // Prepare content and metadata
-        const jsonlContent = this.sessionToJSONL(sessionData);
-        
-        // Analyze content for user feedback
-        const contentSize = jsonlContent.length;
-        const sizeInKB = Math.round(contentSize / 1024);
-        const lines = jsonlContent.split('\n');
-        const messageCount = lines.filter(line => {
-            try {
-                const parsed = JSON.parse(line);
-                return parsed.type === 'user' || parsed.type === 'assistant';
-            } catch (e) {
-                return false;
-            }
-        }).length;
-        
-        // Copy content to clipboard first
+        // Use GistManager to handle Gist sharing with enhanced optimization
         try {
-            await navigator.clipboard.writeText(jsonlContent);
-            
-            // Show enhanced modal with size info
-            this.showGistCreationInstructions();
-            
-            // Show detailed feedback about content
-            let feedbackMessage = t('gistContentCopiedMessage') || `✅ Gist内容已复制到剪贴板！\n\n📊 内容统计：\n- 大小：${sizeInKB} KB\n- 消息数：${messageCount} 条`;
-            feedbackMessage = feedbackMessage.replace('{{size}}', sizeInKB).replace('{{count}}', messageCount);
-            
-            // Check for truncation
-            const truncationLine = lines.find(line => {
-                try {
-                    const parsed = JSON.parse(line);
-                    return parsed.type === 'truncation_info';
-                } catch (e) {
-                    return false;
-                }
-            });
-            
-            if (truncationLine) {
-                const truncationInfo = JSON.parse(truncationLine);
-                const warningText = t('gistTruncatedWarning') || `\n\n⚠️ 由于Gist大小限制，已截断至前{{count}}条消息`;
-                feedbackMessage += warningText.replace('{{count}}', truncationInfo.includedMessages);
-            }
-            
-            const openingText = t('gistOpeningMessage') || '\n\n将为您打开GitHub Gist创建页面...';
-            feedbackMessage += openingText;
-            alert(feedbackMessage);
-        } catch (err) {
-            console.warn('Failed to copy to clipboard:', err);
-            this.showGistCreationInstructions();
-            alert(t('manualCopyGist') || '请手动复制Gist内容');
+            await this.gistManager.shareToGist(sessionData);
+        } catch (error) {
+            console.error('Failed to share to Gist:', error);
+            this.showError(`Failed to share session: ${error.message}`);
         }
-        
-        // Open simple GitHub Gist creation page
-        const gistUrl = 'https://gist.github.com/new';
-        window.open(gistUrl, '_blank');
-        return gistUrl;
     }
     
     showGistCreationInstructions() {
@@ -980,19 +931,8 @@ ${t('vscodeOptions') || '打开方式'}:
         if (!gistUrl) return;
         
         try {
-            // Extract gist ID from URL
-            const gistId = this.extractGistId(gistUrl);
-            if (!gistId) {
-                alert(t('invalidGistUrl') || '无效的Gist URL');
-                return;
-            }
-            
-            // Fetch gist content
-            const gistData = await this.fetchGistContent(gistId);
-            if (!gistData) {
-                alert(t('gistFetchFailed') || '获取Gist内容失败');
-                return;
-            }
+            // Use GistManager to handle Gist import
+            const gistData = await this.gistManager.importFromGist(gistUrl);
             
             // Display the imported session
             this.displayImportedGist(gistData);
@@ -1011,176 +951,13 @@ ${t('vscodeOptions') || '打开方式'}:
     }
     
     extractGistId(url) {
-        // Support various gist URL formats
-        const patterns = [
-            /gist\.github\.com\/[^\/]+\/([a-f0-9]+)/,
-            /gist\.github\.com\/([a-f0-9]+)/,
-            /^([a-f0-9]+)$/
-        ];
-        
-        for (const pattern of patterns) {
-            const match = url.match(pattern);
-            if (match) {
-                return match[1];
-            }
-        }
-        return null;
+        // Use GistManager to extract Gist ID
+        return this.gistManager.extractGistId(url);
     }
     
     async fetchGistContent(gistId) {
-        // 策略1: 优先尝试Raw URL访问（无限制）
-        try {
-            const rawData = await this.fetchGistRaw(gistId);
-            if (rawData) {
-                console.log('Successfully fetched via Raw URL (no rate limit)');
-                return rawData;
-            }
-        } catch (error) {
-            console.log('Raw URL failed, trying API method:', error.message);
-        }
-        
-        // 策略2: 降级到GitHub API（如果用户配置了密钥）
-        const apiKey = localStorage.getItem('github-api-key');
-        if (apiKey) {
-            try {
-                return await this.fetchGistViaAPI(gistId, apiKey);
-            } catch (error) {
-                console.log('API with user key failed:', error.message);
-            }
-        }
-        
-        // 策略3: 尝试无认证API调用（60次/小时限制）
-        try {
-            return await this.fetchGistViaAPI(gistId);
-        } catch (error) {
-            console.log('Unauthenticated API failed:', error.message);
-            // 如果是403错误，建议配置API密钥
-            if (error.message.includes('403') || error.message.includes('rate limit')) {
-                throw new Error('GitHub API rate limit exceeded. Please configure your API key in settings for unlimited access.');
-            }
-            throw error;
-        }
-    }
-    
-    async fetchGistRaw(gistId) {
-        // 尝试多种Raw URL模式
-        const rawPatterns = [
-            // 模式1: 通用Raw URL（最常见）
-            `https://gist.githubusercontent.com/raw/${gistId}`,
-            // 模式2: 带完整路径的Raw URL
-            `https://gist.github.com/${gistId}/raw`,
-        ];
-        
-        for (const url of rawPatterns) {
-            try {
-                console.log(`Trying raw URL: ${url}`);
-                const response = await fetch(url);
-                
-                if (response.ok) {
-                    const content = await response.text();
-                    
-                    // 检查内容是否为空或错误页面
-                    if (!content || content.trim().length === 0) {
-                        continue;
-                    }
-                    
-                    // 检查是否是GitHub的404页面
-                    if (content.includes('<!DOCTYPE html>') && content.includes('GitHub')) {
-                        continue;
-                    }
-                    
-                    return {
-                        id: gistId,
-                        title: `Gist ${gistId}`, // Raw访问无法获取标题
-                        content: content,
-                        url: `https://gist.github.com/${gistId}`,
-                        created: new Date().toISOString(), // Raw访问无法获取创建时间
-                        updated: new Date().toISOString(),
-                        isJSONL: this.detectJSONLFormat(content),
-                        source: 'raw' // 标记数据来源
-                    };
-                }
-            } catch (error) {
-                console.log(`Raw URL ${url} failed:`, error.message);
-                continue;
-            }
-        }
-        
-        throw new Error('Unable to fetch Gist content via Raw URLs');
-    }
-    
-    async fetchGistViaAPI(gistId, apiKey = null) {
-        const headers = {};
-        if (apiKey) {
-            headers['Authorization'] = `token ${apiKey}`;
-        }
-        
-        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-            headers: headers
-        });
-        
-        if (response.ok) {
-            const gist = await response.json();
-            
-            // Find the session file (look for JSONL format first, then fall back to markdown)
-            const files = Object.values(gist.files);
-            let sessionFile = files.find(file => 
-                file.filename.endsWith('.jsonl') || 
-                file.type === 'text/plain' ||
-                file.filename.toLowerCase().includes('session') ||
-                file.filename.toLowerCase().includes('claude')
-            );
-            
-            // If no JSONL file found, look for markdown files for backward compatibility
-            if (!sessionFile) {
-                sessionFile = files.find(file => 
-                    file.filename.endsWith('.md') || 
-                    file.type === 'text/markdown' ||
-                    file.filename.toLowerCase().includes('conversation')
-                );
-            }
-            
-            if (!sessionFile) {
-                throw new Error(t('noSessionFileInGist') || 'Gist中未找到会话文件');
-            }
-            
-            return {
-                id: gistId,
-                title: gist.description || sessionFile.filename,
-                content: sessionFile.content,
-                url: gist.html_url,
-                created: gist.created_at,
-                updated: gist.updated_at,
-                isJSONL: sessionFile.filename.endsWith('.jsonl') || sessionFile.type === 'text/plain',
-                source: 'api' // 标记数据来源
-            };
-        } else if (response.status === 403) {
-            throw new Error('GitHub API rate limit exceeded');
-        } else if (response.status === 404) {
-            throw new Error('Gist not found or private');
-        } else {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-    }
-    
-    detectJSONLFormat(content) {
-        // 尝试检测内容是否为JSONL格式
-        const lines = content.trim().split('\n');
-        if (lines.length === 0) return false;
-        
-        // 检查前几行是否为有效JSON
-        let jsonCount = 0;
-        for (let i = 0; i < Math.min(3, lines.length); i++) {
-            try {
-                JSON.parse(lines[i]);
-                jsonCount++;
-            } catch (e) {
-                // 不是JSON行
-            }
-        }
-        
-        // 如果超过一半的行是JSON，认为是JSONL格式
-        return jsonCount > 0 && jsonCount / Math.min(3, lines.length) > 0.5;
+        // Use GistManager to fetch Gist content
+        return await this.gistManager.fetchGistContent(gistId);
     }
     
     showGistImportHelp(gistUrl) {
@@ -1211,6 +988,21 @@ ${t('vscodeOptions') || '打开方式'}:
             </div>
         `;
         document.body.appendChild(modal);
+    }
+    
+    convertOptimizedMessage(optimizedMsg) {
+        // Convert optimized message format back to standard format for rendering
+        if (optimizedMsg.msg) {
+            // New optimized format
+            return {
+                type: optimizedMsg.type,
+                timestamp: optimizedMsg.ts || optimizedMsg.timestamp,
+                message: optimizedMsg.msg
+            };
+        } else {
+            // Old format, return as is
+            return optimizedMsg;
+        }
     }
     
     updateMetaTagsForSession(sessionData) {
@@ -1487,197 +1279,8 @@ ${t('vscodeOptions') || '打开方式'}:
     }
     
     sessionToJSONL(sessionData) {
-        let jsonlContent = '';
-        
-        // Add session metadata as the first line (optimized)
-        const metadata = {
-            type: 'session_info',
-            id: sessionData.id,
-            summary: sessionData.summary,
-            timestamp: sessionData.timestamp,
-            projectName: sessionData.projectName,
-            sharedAt: new Date().toISOString(),
-            v: '1.1' // Shorter version field
-        };
-        jsonlContent += JSON.stringify(metadata) + '\n';
-        
-        // Optimize messages to save space
-        const optimizedMessages = this.optimizeMessagesForSharing(sessionData.messages);
-        
-        // Gist has a size limit, so we need to be careful about content size
-        const MAX_GIST_SIZE = 900000; // ~900KB limit for safety (GitHub limit is 1MB)
-        let currentSize = jsonlContent.length;
-        let includedMessages = 0;
-        
-        // Add messages in order, but stop if we approach size limit
-        for (const msg of optimizedMessages) {
-            const msgLine = JSON.stringify(msg) + '\n';
-            
-            // Check if adding this message would exceed the limit
-            if (currentSize + msgLine.length > MAX_GIST_SIZE) {
-                console.warn(`Gist size limit approaching. Included ${includedMessages} of ${optimizedMessages.length} messages.`);
-                break;
-            }
-            
-            jsonlContent += msgLine;
-            currentSize += msgLine.length;
-            includedMessages++;
-        }
-        
-        // Add truncation notice if messages were excluded
-        if (includedMessages < optimizedMessages.length) {
-            const truncationNotice = {
-                type: 'truncation_info',
-                msg: `Contains ${includedMessages} of ${sessionData.messages.length} messages due to size limits.`,
-                total: sessionData.messages.length,
-                included: includedMessages
-            };
-            jsonlContent += JSON.stringify(truncationNotice) + '\n';
-        }
-        
-        console.log(`Optimized Gist content: ${jsonlContent.length} bytes, ${includedMessages}/${sessionData.messages.length} messages (saved ~${this.calculateSpaceSaved(sessionData.messages, optimizedMessages)}%)`);
-        return jsonlContent;
-    }
-    
-    optimizeMessagesForSharing(messages) {
-        const optimized = [];
-        const seenContent = new Set();
-        
-        for (const msg of messages) {
-            // Skip duplicate messages
-            const contentKey = this.getMessageContentKey(msg);
-            if (seenContent.has(contentKey)) {
-                continue;
-            }
-            seenContent.add(contentKey);
-            
-            // Create optimized message
-            const optimizedMsg = this.optimizeMessage(msg);
-            
-            // Skip if message has no meaningful content
-            if (this.isMessageMeaningful(optimizedMsg)) {
-                optimized.push(optimizedMsg);
-            }
-        }
-        
-        return optimized;
-    }
-    
-    getMessageContentKey(msg) {
-        if (msg.type === 'user') {
-            if (typeof msg.message?.content === 'string') {
-                return `user:${msg.message.content.slice(0, 100)}`;
-            } else if (Array.isArray(msg.message?.content)) {
-                const textContent = msg.message.content
-                    .filter(item => item.type === 'text')
-                    .map(item => item.text)
-                    .join(' ');
-                return `user:${textContent.slice(0, 100)}`;
-            }
-        } else if (msg.type === 'assistant' && msg.message?.content) {
-            const textContent = msg.message.content
-                .filter(item => item.type === 'text')
-                .map(item => item.text)
-                .join(' ');
-            return `assistant:${textContent.slice(0, 100)}`;
-        }
-        return `${msg.type}:${Math.random()}`;
-    }
-    
-    optimizeMessage(msg) {
-        const optimized = {
-            type: msg.type,
-            ts: msg.timestamp // Shorter field name
-        };
-        
-        if (msg.type === 'user') {
-            optimized.msg = this.optimizeUserContent(msg.message);
-        } else if (msg.type === 'assistant') {
-            optimized.msg = this.optimizeAssistantContent(msg.message);
-        }
-        
-        return optimized;
-    }
-    
-    optimizeUserContent(message) {
-        if (typeof message?.content === 'string') {
-            return { content: message.content };
-        } else if (Array.isArray(message?.content)) {
-            const optimizedContent = message.content
-                .map(item => {
-                    if (item.type === 'text') {
-                        return { type: 'text', text: item.text };
-                    } else if (item.type === 'image') {
-                        // Keep image info but remove large data
-                        return { type: 'image', summary: '[Image attached]' };
-                    }
-                    return null;
-                })
-                .filter(Boolean);
-            return { content: optimizedContent };
-        }
-        return { content: '[No content]' };
-    }
-    
-    optimizeAssistantContent(message) {
-        if (!message?.content) return { content: '[No content]' };
-        
-        const optimizedContent = message.content
-            .map(item => {
-                if (item.type === 'text') {
-                    return { type: 'text', text: item.text };
-                } else if (item.type === 'tool_use') {
-                    // Keep tool calls but minimize input data
-                    return {
-                        type: 'tool_use',
-                        name: item.name,
-                        input: this.minimizeToolInput(item.input)
-                    };
-                }
-                return null;
-            })
-            .filter(Boolean);
-            
-        return { content: optimizedContent };
-    }
-    
-    minimizeToolInput(input) {
-        if (!input) return input;
-        
-        const minimized = {};
-        for (const [key, value] of Object.entries(input)) {
-            if (typeof value === 'string' && value.length > 500) {
-                // Truncate long strings but keep important parts
-                minimized[key] = value.slice(0, 250) + '...[truncated]...' + value.slice(-100);
-            } else if (Array.isArray(value) && value.length > 10) {
-                // Limit array size
-                minimized[key] = [...value.slice(0, 5), '...[truncated]...', ...value.slice(-2)];
-            } else {
-                minimized[key] = value;
-            }
-        }
-        return minimized;
-    }
-    
-    isMessageMeaningful(msg) {
-        if (!msg.msg) return false;
-        
-        if (msg.type === 'user') {
-            const content = typeof msg.msg.content === 'string' 
-                ? msg.msg.content 
-                : JSON.stringify(msg.msg.content);
-            return content && content.trim().length > 3;
-        } else if (msg.type === 'assistant') {
-            return msg.msg.content && msg.msg.content.length > 0;
-        }
-        
-        return false;
-    }
-    
-    calculateSpaceSaved(original, optimized) {
-        const originalSize = JSON.stringify(original).length;
-        const optimizedSize = JSON.stringify(optimized).length;
-        return Math.round(((originalSize - optimizedSize) / originalSize) * 100);
+        // Use GistManager to convert session to JSONL
+        return this.gistManager.sessionToJSONL(sessionData);
     }
     
     convertOptimizedMessage(optimizedMsg) {
@@ -1702,7 +1305,7 @@ ${t('vscodeOptions') || '打开方式'}:
         markdown += `**会话ID**: ${sessionData.id}\n\n`;
         markdown += `---\n\n`;
         
-        sessionData.messages.forEach((msg, index) => {
+        sessionData.messages.forEach((msg) => {
             const sender = msg.type === 'user' ? '👤 **用户**' : '🤖 **Claude**';
             markdown += `## ${sender}\n\n`;
             
@@ -1999,7 +1602,57 @@ window.importFromGist = async () => {
     }
 };
 window.toggleChatInput = () => {
-    const inputContainer = document.querySelector('.chat-input-container');
+    let inputContainer = document.querySelector('.chat-input-container');
+    
+    // 如果容器不存在，创建一个
+    if (!inputContainer) {
+        const chatContainer = document.getElementById('chat-messages');
+        if (chatContainer) {
+            inputContainer = document.createElement('div');
+            inputContainer.className = 'chat-input-container';
+            inputContainer.innerHTML = `
+                <textarea class="chat-input" 
+                          placeholder="${t('chatInputPlaceholder') || '此功能暂未开放，请期待后续版本...'}" 
+                          disabled 
+                          title="${t('chatInputDisabledTooltip') || '当前版本不支持直接在页面中与Claude对话'}"></textarea>
+                <button class="chat-send-btn" disabled title="${t('chatSendDisabledTooltip') || '发送功能暂未开放'}">
+                    <span>📤</span>
+                    <span>${t('send') || '发送'}</span>
+                </button>
+            `;
+            chatContainer.appendChild(inputContainer);
+        } else {
+            // 如果连 chat-messages 容器都不存在，说明还没有加载任何会话
+            console.warn('Chat container not found. Please load a session first.');
+            
+            // 显示提示信息
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #dc2626;
+                border: 1px solid #ef4444;
+                color: #ffffff;
+                padding: 12px 16px;
+                border-radius: 6px;
+                font-size: 12px;
+                z-index: 1001;
+                transition: opacity 0.3s ease;
+            `;
+            notification.textContent = '请先加载一个会话才能使用此功能';
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+            
+            return;
+        }
+    }
+    
     if (inputContainer) {
         // Toggle the visibility of the input container
         inputContainer.classList.toggle('visible');
@@ -2030,6 +1683,12 @@ window.toggleChatInput = () => {
                 notification.style.opacity = '0';
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
+            
+            // Focus on the textarea (even though it's disabled, it shows intent)
+            const textarea = inputContainer.querySelector('.chat-input');
+            if (textarea) {
+                textarea.focus();
+            }
         }
     }
 };
@@ -2088,7 +1747,6 @@ window.copyGistImportLink = () => {
 
 window.shareSessionToX = () => {
     // Get current shared session data from URL
-    const hash = window.location.hash;
     const currentUrl = window.location.href;
     
     let sessionTitle = t('claudeCodeSession') || 'Claude Code会话';
