@@ -23,12 +23,8 @@ const LANGUAGES = {
                 'Find and select the .claude directory (usually in user home directory: ~/)',
                 'Start browsing your session history'
             ],
-            locations: 'Common locations:',
-            locationList: [
-                'Mac: /Users/[username]/.claude',
-                'Windows: C:\\Users\\[username]\\.claude',
-                'Linux: /home/[username]/.claude'
-            ]
+            locations: 'Click the button below to select the .claude directory',
+            locationList: []
         },
         selectBtn: '📁 Select .claude directory',
         gistImportBtn: '🌐 View shared sessions',
@@ -220,12 +216,8 @@ const LANGUAGES = {
                 '找到并选择 <code>.claude</code> 目录（通常在用户主目录下：<code>~/</code>)',
                 '开始浏览您的会话记录'
             ],
-            locations: '常见位置：',
-            locationList: [
-                'Mac: <code>/Users/[用户名]/.claude</code>',
-                'Windows: <code>C:\\Users\\[用户名]\\.claude</code>',
-                'Linux: <code>/home/[用户名]/.claude</code>'
-            ]
+            locations: '点击下方按钮选择 .claude 目录开始浏览',
+            locationList: []
         },
         selectBtn: '📁 选择 .claude 目录',
         gistImportBtn: '🌐 查看他人分享的会话',
@@ -452,14 +444,30 @@ function updateUI() {
     const instructionsList = document.querySelector('.instructions ol');
     const locationsTitle = document.querySelector('.instructions p strong');
     
-    if (instructionsTitle) instructionsTitle.textContent = t('instructions.title');
+    if (instructionsTitle) {
+        // Show features first, then instructions
+        instructionsTitle.textContent = t('features.title');
+    }
     if (instructionsList) {
-        instructionsList.innerHTML = t('instructions.steps')
+        // Combine features and instructions
+        const featuresHtml = t('features.list')
+            .map(feature => `<li>${feature}</li>`)
+            .join('');
+        const instructionsHtml = t('instructions.steps')
             .map(step => `<li>${step}</li>`)
             .join('');
+        instructionsList.innerHTML = featuresHtml;
+        
+        // Add instructions title after the features list
+        const instructionsSection = document.createElement('div');
+        instructionsSection.innerHTML = `
+            <h4 style="margin-top: 20px; margin-bottom: 10px; color: #e5e5e5;">${t('instructions.title')}</h4>
+            <ol style="margin: 0; padding-left: 20px;">${instructionsHtml}</ol>
+        `;
+        instructionsList.parentElement.appendChild(instructionsSection);
     }
     if (locationsTitle && locationsTitle.parentElement) {
-        locationsTitle.parentElement.innerHTML = `<strong>${t('instructions.locations')}</strong>`;
+        locationsTitle.parentElement.innerHTML = `<p><strong>${t('instructions.locations')}</strong></p>`;
     }
     
     // Update buttons
