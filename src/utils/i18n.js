@@ -181,7 +181,7 @@ export const LANGUAGES = {
         apiKeySaved: 'API key saved successfully',
         apiKeyRemoved: 'API key removed successfully',
         apiKeyHelp: 'Get your API key from GitHub Settings > Developer settings > Personal access tokens',
-        viewThisSession: '🤖✨ Claude just crushed this coding challenge! 🔥'
+        viewThisSession: '🤖✨ Claude just crushed this coding challenge! 🔥',
         loadingSharedSession: 'Loading Shared Session...',
         fetchingFromGist: 'Fetching content directly from Gist (no rate limit)...',
         loadingFailed: 'Loading Failed',
