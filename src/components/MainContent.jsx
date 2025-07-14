@@ -27,8 +27,8 @@ const MainContent = ({
   const shareToX = () => {
     const currentUrl = window.location.href
     const sessionTitle = currentSession?.title || currentSession?.summary || t('claudeCodeSession')
-    const text = t('viewThisSession').replace('{{title}}', sessionTitle)
-    const hashtags = 'ClaudeCode,AI,Programming,CodeSession'
+    const text = t('viewThisSession')
+    const hashtags = 'ClaudeCode'
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentUrl)}&hashtags=${hashtags}`
     window.open(twitterUrl, '_blank')
   }

@@ -44,7 +44,7 @@ const FABContainer = ({ t, onShareSession }) => {
         title={t('chatInputDisabledTooltip') || '继续对话'}
       >
         <span className="fab-icon">💬</span>
-        <span className="fab-text">继续对话</span>
+        <span className="fab-text">{t('continueConversation') || 'Continue conversation'}</span>
       </button>
     </div>
   )

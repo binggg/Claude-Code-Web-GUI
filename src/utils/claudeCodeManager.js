@@ -72,6 +72,12 @@ export class ClaudeCodeManager {
       sessionData.url = gistData.url
     }
 
+    // Update URL with import parameter
+    if (gistData.url) {
+      const importParam = encodeURIComponent(gistData.url)
+      window.history.replaceState(null, '', `#import=${importParam}`)
+    }
+
     setAppState(prev => ({
       ...prev,
       view: 'shared',

@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 
 const ShareModal = ({ isOpen, onClose, sessionData, onCreateGist, onImportGist, t }) => {
   const [gistUrl, setGistUrl] = useState('')
+  const [createdGistUrl, setCreatedGistUrl] = useState('')
   const [importing, setImporting] = useState(false)
 
   const handleCreateGist = async () => {
@@ -12,6 +13,20 @@ const ShareModal = ({ isOpen, onClose, sessionData, onCreateGist, onImportGist, 
     } catch (error) {
       console.error('Failed to create Gist:', error)
       alert(t('shareError') || '分享失败: ' + error.message)
+    }
+  }
+
+  const handleCopyImportLink = () => {
+    if (!createdGistUrl.trim()) return
+    
+    const importLink = `${window.location.origin}${window.location.pathname}#import=${encodeURIComponent(createdGistUrl)}`
+    
+    try {
+      navigator.clipboard.writeText(importLink)
+      alert(t('importLinkCopied') || '导入链接已复制到剪贴板！')
+    } catch (err) {
+      console.error('Failed to copy import link:', err)
+      prompt(t('manualCopyGist') || '请手动复制导入链接:', importLink)
     }
   }
 
@@ -90,6 +105,68 @@ const ShareModal = ({ isOpen, onClose, sessionData, onCreateGist, onImportGist, 
             >
               🚀 {t('createGist') || '开始创建Gist'}
             </button>
+            
+            <div style={{ marginTop: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#a1a1aa' }}>
+                {t('pasteGistUrl') || '粘贴创建的Gist URL...'}
+              </label>
+              <input
+                type="text"
+                className="gist-url-input"
+                placeholder={t('pasteGistUrl') || '粘贴创建的Gist URL...'}
+                value={createdGistUrl}
+                onChange={(e) => setCreatedGistUrl(e.target.value)}
+                style={{
+                  width: '100%',
+                  marginBottom: '8px',
+                  background: '#262626',
+                  border: '1px solid #3f3f46',
+                  color: '#ffffff',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontFamily: 'inherit'
+                }}
+              />
+              {createdGistUrl && (
+                <button 
+                  className="action-btn gist-btn" 
+                  onClick={handleCopyImportLink}
+                  style={{ width: '100%' }}
+                >
+                  📋 {t('copyImportLink') || '复制导入链接'}
+                </button>
+              )}
+            </div>
+            
+            {createdGistUrl && (
+              <div style={{ marginTop: '12px' }}>
+                <input
+                  type="text"
+                  className="gist-url-input"
+                  value={`${window.location.origin}${window.location.pathname}#import=${encodeURIComponent(createdGistUrl)}`}
+                  readOnly
+                  style={{
+                    width: '100%',
+                    marginBottom: '8px',
+                    background: '#1a1a1a',
+                    border: '1px solid #3f3f46',
+                    color: '#ffffff',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontFamily: 'monospace'
+                  }}
+                />
+                <button 
+                  className="action-btn gist-btn" 
+                  onClick={handleCopyImportLink}
+                  style={{ width: '100%' }}
+                >
+                  📋 {t('copyImportLink') || '复制导入链接'}
+                </button>
+              </div>
+            )}
           </div>
           
           <div className="share-option">
