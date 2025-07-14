@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Github, Settings } from 'lucide-react'
+import { Github, Settings, Twitter } from 'lucide-react'
 import SettingsModal from './SettingsModal'
 
 const Header = ({ 
@@ -39,6 +39,16 @@ const Header = ({
         >
           <Github size={14} />
           {t('github')}
+        </a>
+        <a 
+          href="https://x.com/being99/status/1944176927478325631" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="github-link"
+          title="Follow us on X (Twitter)"
+        >
+          <Twitter size={14} />
+          X
         </a>
       </div>
       
