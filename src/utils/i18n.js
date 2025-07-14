@@ -396,7 +396,7 @@ export const LANGUAGES = {
         apiKeyRemoved: 'API密钥移除成功',
         apiKeyHelp: '从 GitHub设置 > Developer settings > Personal access tokens 获取API密钥',
         claudeCodeSession: 'Claude Code会话',
-        viewThisSession: '🤖✨ Claude大神刚刚解决了一个超难的编程问题！🔥'
+        viewThisSession: '🤖✨ Claude大神刚刚解决了一个超难的编程问题！🔥',
         loadingSharedSession: '正在加载分享的会话...',
         fetchingFromGist: '正在直接从Gist获取内容（无频率限制）...',
         loadingFailed: '加载失败',
