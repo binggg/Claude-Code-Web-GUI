@@ -473,8 +473,22 @@ class GistManager {
   }
 
   async fetchGistRaw(gistId) {
+    // Handle both formats: gistId only or full gist URL with username
+    let gistPath = gistId;
+    if (gistId.includes('gist.github.com/')) {
+      // Extract username and gistId from full URL
+      const match = gistId.match(/gist\.github\.com\/([^\/]+)\/([a-f0-9]+)/);
+      if (match) {
+        gistPath = `${match[1]}/${match[2]}`;
+      } else {
+        // Fallback to just gistId
+        const idMatch = gistId.match(/([a-f0-9]+)/);
+        gistPath = idMatch ? idMatch[1] : gistId;
+      }
+    }
+    
     const rawUrls = [
-      `https://gist.githubusercontent.com/raw/${gistId}/claude-session.jsonl`,
+      `https://gist.githubusercontent.com/${gistPath}/raw`,
       `https://gist.githubusercontent.com/raw/${gistId}`,
       `https://gist.github.com/${gistId}/raw/claude-session.jsonl`,
       `https://gist.github.com/${gistId}/raw`
